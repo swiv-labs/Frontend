@@ -6,10 +6,10 @@ import { usePrivy, useSolanaWallets } from "@privy-io/react-auth"
 import type { Pool, Prediction } from "@/lib/types/models"
 import { placeEncryptedBet } from "@/lib/solana/place-bet"
 import { useToast } from "@/lib/hooks/useToast"
-import {
-  useSendTransaction,
-  useSignTransaction,
-} from "@privy-io/react-auth/solana";
+import { useSignMessage, useSignTransaction } from '@privy-io/react-auth/solana';
+import { PublicKey, Transaction } from "@solana/web3.js"
+import { BN } from "@coral-xyz/anchor"
+import { getAssociatedTokenAddress } from "@solana/spl-token"
 
 interface InlineBettingPanelProps {
   pool: Pool
@@ -17,9 +17,19 @@ interface InlineBettingPanelProps {
 
 export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   const { ready, authenticated } = usePrivy()
-  const { wallets } = useSolanaWallets()
   const { signTransaction } = useSignTransaction()
-  const { sendTransaction } = useSendTransaction()
+  const { signMessage } = useSignMessage()
+  const { wallets } = useSolanaWallets()
+
+  const embeddedWallet = wallets.find(w => w.walletClientType === "privy")
+
+  const wallet = {
+    publicKey: embeddedWallet ? new PublicKey(embeddedWallet.address) : null,
+    signTransaction: embeddedWallet?.signTransaction.bind(embeddedWallet),
+    signAllTransactions: async (txs: Transaction[]) => {
+      return Promise.all(txs.map(tx => embeddedWallet?.signTransaction(tx)))
+    },
+  };
 
   const toast = useToast()
 
@@ -74,19 +84,25 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
 
     setIsSubmitting(true)
 
+    const usdcMint = new PublicKey(process.env.NEXT_PUBLIC_USDC_TOKEN_MINT!)
+    const userTokenAccount = await getAssociatedTokenAddress(usdcMint, new PublicKey(solanaWallet.address))
+    const userAta = userTokenAccount.toBase58()
+
     try {
       const result = await placeEncryptedBet({
-        l1Connection,
         userWallet: new PublicKey(solanaWallet.address),
-        userSignerSecret: userPrivySecret, // From Privy
         userTokenAccount: new PublicKey(userAta),
         poolId: pool.id,
         poolPubkey: new PublicKey(pool.pool_pubkey),
-        protocolPda: new PublicKey(protocolPda),
-        vaultPda: new PublicKey(vaultPda),
-        prediction: new anchor.BN(Math.floor(prediction * 1e6)),
-        stakeAmount: new anchor.BN(Math.floor(depositAmount * 1_000_000)),
+        prediction: new BN(Math.floor(prediction * 1e6)),
+        stakeAmount: new BN(Math.floor(depositAmount * 1000000)),
         requestId: `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+        signTransaction: async (args: any) => {
+          const signed = await signTransaction(args)
+          return signed as Transaction
+        },
+        signMessage: signMessage,
+        wallet: wallet
       })
 
       setPlacedPrediction(result)
