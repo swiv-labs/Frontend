@@ -7,10 +7,9 @@ interface PoolsFiltersProps {
 
 const filters = [
   { value: "all", label: "All" },
-  { value: "ongoing", label: "Live" },
-  { value: "upcoming", label: "Pre Launch" },
-  { value: "pending", label: "Pending Resolution" },
-  { value: "closed", label: "Ended" },
+  { value: "ongoing", label: "Active" },
+  { value: "upcoming", label: "Expired" },
+  { value: "pending", label: "Resolved" },
 ] as const
 
 export function PoolsFilters({ currentFilter, onFilterChange }: PoolsFiltersProps) {
