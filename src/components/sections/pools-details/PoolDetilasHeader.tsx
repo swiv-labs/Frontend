@@ -37,18 +37,18 @@ export function PoolDetailsHeader({ pool, onPredict }: PoolDetailsHeaderProps) {
           Pools
         </Link>
         <span>/</span>
-        <span className="text-foreground">{pool.asset}</span>
+        <span className="text-foreground">Bitcoin Price...</span>
       </div>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-4xl">
-            {pool.icon}
+            <img src={"https://storage.trepa.app/76a5077a-b392-4af2-b226-36efaea2a65e.webp"} alt="" className="h-full w-full object-cover" />
           </div>
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-foreground">{pool.asset}</h1>
+              <h1 className="text-3xl font-bold text-foreground">Bitcoin Price at 11:59 PM UTC on January 27, 2026</h1>
               {getStatusBadge(pool.status)}
             </div>
             <p className="text-muted-foreground">{pool.symbol}/USD Prediction Pool</p>

@@ -79,8 +79,8 @@ export default function PoolDetailsPage() {
 
   return (
     <PageLayout>
-      <div className="min-h-screen py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen py-4">
+        <div className="mx-auto max-w-7xl">
           <PoolDetailsHeader pool={pool} onPredict={() => setShowModal(true)} />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

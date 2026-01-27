@@ -22,12 +22,12 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
         <Link
           key={pool.id}
           href={`/pools/${pool.id}`}
-          className="group relative rounded-xl border border-white/10 bg-[#0B0E11] p-5 transition-all hover:border-primary/40"
+          className="group relative rounded-xl border border-foreground/10 bg-background/90 p-5 transition-all hover:border-primary/40"
         >
 
           {/* Header */}
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-1/5 rounded-lg bg-black/40 flex items-center justify-center overflow-hidden">
+            <div className="w-1/5 rounded-lg bg-background/40 flex items-center justify-center overflow-hidden">
               {typeof pool.icon === "string" ? (
                 <img src={"https://storage.trepa.app/76a5077a-b392-4af2-b226-36efaea2a65e.webp"} alt="" className="h-full w-full object-cover" />
               ) : (
