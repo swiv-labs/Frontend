@@ -142,7 +142,7 @@ export function Navbar() {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className={`flex items-center justify-between bg-background/10 backdrop-blur-xl px-0 sm-px-2 py-4 shadow-lg pointer-events-auto
+          className={`flex items-center justify-between bg-background/10 backdrop-blur-xl px-0 sm-px-2 py-2 shadow-lg pointer-events-auto
           transition-all duration-500 ease-in-out
           ${
             // scrolled
@@ -189,7 +189,7 @@ export function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl border border-border transition-smooth"
+              className="p-2 rounded-xl border border-border transition-smooth"
               aria-label="Toggle theme"
             >
               {theme === "dark" ? (
@@ -227,7 +227,7 @@ export function Navbar() {
             <button
               onClick={handleConnect}
               disabled={!ready}
-              className="relative px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-accent rounded-xl transition-smooth hover:shadow-lg hover:shadow-primary/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative px-6 py-2 text-sm font-semibold text-white bg-gradient-to-r from-primary to-accent rounded-xl transition-smooth hover:shadow-lg hover:shadow-primary/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {!ready ? (
                 "Loading..."
@@ -242,7 +242,7 @@ export function Navbar() {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2.5 rounded-xl border border-border transition-smooth"
+              className="md:hidden p-2 rounded-xl border border-border transition-smooth"
               aria-label="Toggle menu"
             >
               <svg

@@ -86,7 +86,7 @@ export default function PoolsPage() {
 
   return (
     <PageLayout>
-      <div className="min-h-screen py-10">
+      <div className="min-h-screen py-4">
         <div className="">
           <PoolsFilters currentFilter={filter} onFilterChange={setFilter} />
           <PoolsGrid pools={filteredPools} />
