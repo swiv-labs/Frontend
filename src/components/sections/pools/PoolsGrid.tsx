@@ -22,7 +22,7 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
         <Link
           key={pool.id}
           href={`/pools/${pool.id}`}
-          className="group relative rounded-xl border border-white/10 bg-[#0B0E11] p-5 transition-all hover:border-green-500/40"
+          className="group relative rounded-xl border border-white/10 bg-[#0B0E11] p-5 transition-all hover:border-primary/40"
         >
           {/* Status */}
           <div className="absolute right-4 top-4 text-xs flex items-center gap-2">
@@ -40,7 +40,7 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
             )}
 
             {pool.status === "closed" && (
-              <span className="rounded-full bg-green-500/10 px-3 py-1 text-green-400">
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
                 Resolved
               </span>
             )}
@@ -62,7 +62,7 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
               </h3>
               <p className="text-xs text-muted-foreground">
                 Market Size
-                <span className="ml-2 text-green-400 font-medium">
+                <span className="ml-2 text-primary font-medium">
                   {pool.poolSize} SOL
                 </span>
               </p>
@@ -81,7 +81,7 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
                 </div>
                 <div className="h-2 rounded-full bg-white/10 overflow-hidden">
                   <div
-                    className="h-full bg-green-400"
+                    className="h-full bg-primary-400"
                     style={{ width: `${opt.percentage}%` }}
                   />
                 </div>

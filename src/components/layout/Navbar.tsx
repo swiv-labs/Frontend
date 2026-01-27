@@ -137,12 +137,12 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed z-50 top-0 left-0 right-0 w-full flex justify-center border border-border pointer-events-none">
+      <header className="fixed z-50 top-0 left-0 right-0 w-full flex justify-center bg-background/10 backdrop-blur-xl border border-border pointer-events-none">
         <motion.nav
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className={`flex items-center justify-between bg-background/10 backdrop-blur-xl px-0 sm-px-2 py-2 shadow-lg pointer-events-auto
+          className={`flex items-center justify-between px-0 sm-px-2 py-2 shadow-lg pointer-events-auto
           transition-all duration-500 ease-in-out
           ${
             // scrolled

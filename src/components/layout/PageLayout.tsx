@@ -13,7 +13,7 @@ function PageLayoutContent({ children }: { children: React.ReactNode }) {
     <>
       <Navbar />
       <main className="min-h-screen pt-16 max-w-7xl mx-auto">{children}</main>
-      <Footer />
+      {/* <Footer /> */}
       <ToastContainer toasts={toasts} />
     </>
   )

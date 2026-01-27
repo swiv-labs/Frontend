@@ -68,9 +68,9 @@ export default function PredictionsPage() {
 
   return (
     <PageLayout>
-      <div className="min-h-screen py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <PredictionsHeader />
+      <div className="min-h-screen py-4">
+        <div className="mx-auto max-w-7xl">
+          {/* <PredictionsHeader /> */}
           <PredictionsStats predictions={predictions} stats={stats} />
           <PredictionsTable predictions={predictions} />
         </div>
