@@ -3,7 +3,6 @@
 import { PageLayout } from "@/components/layout/PageLayout"
 import { PoolsFilters } from "@/components/sections/pools/PoolsFilter"
 import { PoolsGrid } from "@/components/sections/pools/PoolsGrid"
-import { PoolsHeader } from "@/components/sections/pools/PoolsHeader"
 import { LoadingScreen } from "@/components/ui/LoadigSpinner"
 import { fetchCryptoPrice } from "@/lib/api/coingecko"
 import { getAllPools } from "@/lib/api/pools"
@@ -89,7 +88,6 @@ export default function PoolsPage() {
     <PageLayout>
       <div className="min-h-screen py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <PoolsHeader />
           <PoolsFilters currentFilter={filter} onFilterChange={setFilter} />
           <PoolsGrid pools={filteredPools} />
         </div>

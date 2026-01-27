@@ -17,7 +17,7 @@ import { useToast } from "@/lib/hooks/useToast";
 import { authApi } from "@/lib/api/auth";
 
 const navLinks = [
-  { href: "/", label: "Home" },
+  // { href: "/", label: "Home" },
   { href: "/pools", label: "Pools" },
   { href: "/predictions", label: "My Predictions" },
   { href: "/leaderboard", label: "Leaderboard" },
@@ -142,46 +142,47 @@ export function Navbar() {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className={`flex items-center justify-between bg-background/10 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-4 shadow-lg pointer-events-auto border border-border/50
+          className={`flex items-center justify-between bg-background/10 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-4 shadow-lg pointer-events-auto
           transition-all duration-500 ease-in-out
           ${
-            scrolled
-              ? "w-full max-w-full rounded-none shadow-md translate-y-0"
-              : "w-[95%] max-w-6xl mt-6 rounded-2xl shadow-xl"
-          }`}
+            // scrolled
+            "w-full max-w-7xl rounded-none shadow-md translate-y-0"
+            // "w-[95%] max-w-6xl mt-6 rounded-2xl shadow-xl"
+            }`}
         >
-          {/* Logo */}
-          <Logo />
+          <div className="flex items-center gap-8">
+            {/* Logo */}
+            <Logo />
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`relative px-4 py-2 text-sm font-medium transition-smooth rounded-lg ${
-                    isActive
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {link.label}
-                  {isActive && (
-                    <motion.div
-                      layoutId="navbar-indicator"
-                      className="absolute inset-0 bg-primary/10 rounded-lg border border-primary/20"
-                      transition={{
-                        type: "spring",
-                        bounce: 0.2,
-                        duration: 0.6,
-                      }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-1">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`relative px-4 py-2 text-sm font-medium transition-smooth rounded-lg ${isActive
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                      }`}
+                  >
+                    {link.label}
+                    {/* {isActive && (
+                      <motion.div
+                        layoutId="navbar-indicator"
+                        className="absolute inset-0 bg-primary/10 rounded-lg border border-primary/20"
+                        transition={{
+                          type: "spring",
+                          bounce: 0.2,
+                          duration: 0.6,
+                        }}
+                      />
+                    )} */}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -284,11 +285,10 @@ export function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block px-4 py-2.5 text-sm font-medium transition-smooth rounded-lg ${
-                      isActive
+                    className={`block px-4 py-2.5 text-sm font-medium transition-smooth rounded-lg ${isActive
                         ? "text-primary bg-primary/10 border border-primary/20"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    }`}
+                      }`}
                   >
                     {link.label}
                   </Link>

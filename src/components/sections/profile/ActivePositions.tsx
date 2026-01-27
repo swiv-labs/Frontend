@@ -9,7 +9,7 @@ export default function ActivePositions() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
   const pools = useAppSelector((state) => state.pools.pools)
 
-  const activePredictions = predictions.filter((p) => p.status === "pending")
+  const activePredictions = predictions.filter((p) => p.status === "pending" || p.status === "resolved")
 
   return (
     <motion.div

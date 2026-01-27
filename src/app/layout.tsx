@@ -1,10 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Bricolage_Grotesque } from "next/font/google"
+import { Roboto } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/lib/providers/Providers"
 
-const inter = Bricolage_Grotesque({
+const inter = Roboto({
   subsets: ["latin"],
   variable: "--font-geist-sans",
   weight: "400"
