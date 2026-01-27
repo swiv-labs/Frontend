@@ -1,48 +1,44 @@
 "use client"
 
-import { motion } from "framer-motion"
-
 interface PoolsFiltersProps {
-  currentFilter: "all" | "ongoing" | "upcoming" | "closed"
-  onFilterChange: (filter: "all" | "ongoing" | "upcoming" | "closed") => void
+  currentFilter: "all" | "ongoing" | "upcoming" | "pending" | "closed"
+  onFilterChange: (filter: PoolsFiltersProps["currentFilter"]) => void
 }
 
 const filters = [
-  { value: "all" as const, label: "All Pools", icon: "🎯" },
-  { value: "ongoing" as const, label: "Live", icon: "🔴" },
-  // { value: "upcoming" as const, label: "Upcoming", icon: "⏰" },
-  { value: "closed" as const, label: "Closed", icon: "✅" },
-]
+  { value: "all", label: "All" },
+  { value: "ongoing", label: "Live" },
+  { value: "upcoming", label: "Pre Launch" },
+  { value: "pending", label: "Pending Resolution" },
+  { value: "closed", label: "Ended" },
+] as const
 
 export function PoolsFilters({ currentFilter, onFilterChange }: PoolsFiltersProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="mb-12"
-    >
-      <div className="flex flex-wrap items-center justify-center gap-4">
+    <div className="mb-8 border-b border-white/10">
+      <div className="flex items-center gap-6 text-sm">
         {filters.map((filter) => {
-          const isActive = currentFilter === filter.value
+          const active = currentFilter === filter.value
+
           return (
             <button
               key={filter.value}
               onClick={() => onFilterChange(filter.value)}
-              className={`relative px-8 py-3.5 text-sm font-bold rounded-2xl transition-all duration-300 ${
-                isActive
-                  ? "text-white bg-gradient-to-r from-primary to-accent shadow-xl shadow-primary/40 scale-105"
-                  : "text-muted-foreground hover:text-foreground border border-border hover:border-primary/30"
+              className={`relative pb-3 transition-colors ${
+                active
+                  ? "text-green-400"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <span className="flex items-center gap-2">
-                {/* <span className="text-base">{filter.icon}</span> */}
-                {filter.label}
-              </span>
+              {filter.label}
+
+              {active && (
+                <span className="absolute left-0 -bottom-px h-0.5 w-full bg-green-400" />
+              )}
             </button>
           )
         })}
       </div>
-    </motion.div>
+    </div>
   )
 }
