@@ -11,6 +11,7 @@
   "dependencies": {
     "@arcium-hq/client": "^0.4.0",
     "@arcium-hq/reader": "^0.4.0",
+    "@magicblock-labs/ephemeral-rollups-sdk": "^0.8.4",
     "@privy-io/react-auth": "^2.21.4",
     "@reduxjs/toolkit": "^2.9.0",
     "@solana/spl-token": "^0.4.14",

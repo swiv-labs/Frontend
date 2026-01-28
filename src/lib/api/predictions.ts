@@ -1,6 +1,11 @@
 /**
  * Predictions/Bets API integration
  * Directly aligned with backend Prediction model
+ * 
+ * This API layer is called AFTER on-chain transactions are complete:
+ * 1. Frontend: Create UserBet account via init_bet (L1)
+ * 2. Frontend: Delegate to TEE via place_bet (Ephemeral RPC)
+ * 3. Frontend: Call this API to persist metadata in database
  */
 
 import type { Prediction, UserStats, ApiResponse, ApiListResponse } from "@/lib/types/models"
@@ -14,15 +19,17 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3
 export interface PlacePredictionRequest {
   poolId: string
   userWallet: string
-  deposit: number // Amount in lamports
-  prediction?: number // Optional, can be encrypted on TEE
+  deposit: number // Amount in lamports/token units
+  prediction?: number // Predicted value, can be encrypted on TEE
+  requestId?: string // Unique request ID for bet PDA seed
+  bet_pubkey?: string // On-chain bet account pubkey after init_bet
 }
 
 export const placePrediction = async (
   data: PlacePredictionRequest,
 ): Promise<Prediction> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/predictions/place`, {
+    const response = await fetch(`${API_BASE_URL}/api/predictions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

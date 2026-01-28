@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth"
+import { PublicKey } from "@solana/web3.js"
 import type { Pool, Prediction } from "@/lib/types/models"
 import { placeEncryptedBet } from "@/lib/solana/place-bet"
 import { useToast } from "@/lib/hooks/useToast"
@@ -14,8 +15,11 @@ interface InlineBettingPanelProps {
 /**
  * Inline betting panel for pool details page
  * Replaces modal-based betting with a persistent, inline control
+ * 
  * Features:
- * - Slider-based prediction input with contract-aligned range
+ * - Slider-based prediction input constrained to pool's min_prediction and max_prediction
+ * - Real-time value display and validation
+ * - MagicBlock delegation pattern with Privy signing
  * - Clear feedback and validation
  * - Intentional, readable layout
  */
@@ -33,10 +37,10 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   const isPoolActive = pool.status === "active"
   const isPoolEnded = new Date().getTime() / 1000 > pool.end_time
 
-  // Calculate reasonable prediction range based on pool metadata
-  // Default to 0-1000 range, can be customized based on pool.resolution_target
-  const MIN_PREDICTION = 0
-  const MAX_PREDICTION = pool.resolution_target ? pool.resolution_target * 2 : 1000
+  // Use min/max prediction from pool data
+  // These are set when pool is created in the backend
+  const MIN_PREDICTION = pool.min_prediction || 0
+  const MAX_PREDICTION = pool.max_prediction || 1000
   const STEP = (MAX_PREDICTION - MIN_PREDICTION) / 100
 
   const handlePredictionChange = (value: number) => {
@@ -57,6 +61,12 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
       return
     }
 
+    // Validate prediction is within range
+    if (prediction < MIN_PREDICTION || prediction > MAX_PREDICTION) {
+      toast.error(`Prediction must be between ${MIN_PREDICTION} and ${MAX_PREDICTION}`)
+      return
+    }
+
     if (!ready || !authenticated || !solanaWallet) {
       toast.error("Please connect your wallet first")
       return
@@ -70,21 +80,36 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
     setIsSubmitting(true)
 
     try {
-      // Convert deposit to lamports (assuming token with 6 decimals)
+      // Convert deposit to lamports (assuming 6 decimals)
       const depositInLamports = Math.floor(depositAmount * 1_000_000)
+
+      // Get signTransaction from Privy
+      const signTransaction = solanaWallet.signTransaction
+      if (!signTransaction) {
+        throw new Error("Wallet does not support transaction signing")
+      }
+
+      // TODO: Get user's token account address from blockchain
+      // For now, use a placeholder - in production, this should be fetched
+      const tokenAccountAddress = new PublicKey(
+        "11111111111111111111111111111111" // Placeholder
+      )
 
       const result = await placeEncryptedBet({
         poolId: pool.id,
+        poolPubkey: new PublicKey(pool.pool_pubkey),
         predictedPrice: prediction,
         stakeAmount: depositInLamports,
-        userWallet: solanaWallet.address,
+        userWallet: new PublicKey(solanaWallet.address),
+        tokenAccountAddress,
+        signTransaction,
       })
 
       setPlacedPrediction(result)
       toast.success("Prediction placed successfully!")
 
       // Reset form
-      setPrediction(0)
+      setPrediction(MIN_PREDICTION)
       setDeposit("")
 
       // Clear success message after 5 seconds
@@ -216,8 +241,9 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
           {/* Pool Info Hint */}
           <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
             <p className="text-xs text-muted-foreground">
-              <span className="font-semibold text-primary">Tip:</span> Use the slider to adjust your prediction
-              within the contract-defined range. Higher accuracy earns more rewards.
+              <span className="font-semibold text-primary">Tip:</span> Use the slider to adjust your
+              prediction within the contract-defined range ({MIN_PREDICTION.toFixed(2)} -{" "}
+              {MAX_PREDICTION.toFixed(2)}). Higher accuracy earns more rewards.
             </p>
           </div>
         </form>

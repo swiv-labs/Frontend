@@ -58,7 +58,7 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
           >
             <Link
               href={`/pools/${pool.id}`}
-              className="group relative block rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
+              className="group relative block rounded-xl border border-border/50 bg-muted/30 p-6 transition-all hover:border-primary/50 hover:shadow-sm hover:shadow-primary/10"
             >
               {/* Status Badge */}
               <div className="absolute top-4 right-4">

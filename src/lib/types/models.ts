@@ -27,6 +27,8 @@ export interface Pool {
   conviction_bonus_bps: number // Basis points for conviction bonus
   metadata?: string // Additional JSON metadata
   resolution_target?: number // Target price for resolution (if applicable)
+  min_prediction: number // Minimum prediction value constraint
+  max_prediction: number // Maximum prediction value constraint
   is_resolved: boolean // Whether pool has been resolved
   resolution_ts?: number // Timestamp when resolved
   total_weight?: string // Total calculated weight (stored as string for large numbers)

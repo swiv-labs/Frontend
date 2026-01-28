@@ -33,7 +33,7 @@ export function PoolsFilters({ currentFilter, onFilterChange }: PoolsFiltersProp
               className={`px-4 py-2 rounded-lg transition-all font-medium ${
                 active
                   ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                  : "bg-muted/40 text-muted-foreground hover:bg-muted/80 hover:text-foreground"
               }`}
             >
               {filter.label}
