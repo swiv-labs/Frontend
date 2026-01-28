@@ -62,7 +62,7 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
             >
               {/* Status Badge */}
               <div className="absolute top-4 right-4">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusColor.bg} ${statusColor.text}`}>
+                <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-semibold ${statusColor.bg} ${statusColor.text}`}>
                   {statusColor.label}
                 </span>
               </div>
@@ -85,8 +85,8 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
                     <p className="font-semibold text-sm">{pool.total_participants}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs uppercase tracking-wide">Vault</p>
-                    <p className="font-mono text-sm font-semibold">{formatTokenAmount(pool.vault_balance)}</p>
+                    <p className="text-muted-foreground text-xs uppercase tracking-wide">Pool Volume</p>
+                    <p className="font-mono text-sm font-semibold">${formatTokenAmount(pool.vault_balance)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs uppercase tracking-wide">Time Left</p>

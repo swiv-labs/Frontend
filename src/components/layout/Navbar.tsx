@@ -137,7 +137,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed z-50 top-0 left-0 right-0 w-full flex justify-center bg-background/10 backdrop-blur-xl border border-border pointer-events-none">
+      <header className="fixed z-50 px-2 md:px-4 top-0 left-0 right-0 w-full flex justify-center bg-background/10 backdrop-blur-xl border border-border pointer-events-none">
         <motion.nav
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
