@@ -1,99 +1,168 @@
-import { PoolResponse } from "./pools"
+/**
+ * Predictions/Bets API integration
+ * Directly aligned with backend Prediction model
+ */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.swiv.xyz"
+import type { Prediction, UserStats, ApiResponse, ApiListResponse } from "@/lib/types/models"
 
-export interface CreatePredictionRequest {
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"
+
+/**
+ * Place a new prediction/bet on a pool
+ * Matches backend PredictionsController.placeBet signature
+ */
+export interface PlacePredictionRequest {
   poolId: string
   userWallet: string
-  amount: string
+  deposit: number // Amount in lamports
+  prediction?: number // Optional, can be encrypted on TEE
 }
 
-export interface CreatePredictionResponse {
-  status: string
-  message: string
-  data: {
-    id: string
-    pool_id: string
-    user_wallet: string
-    amount: number
-    reward: number | null
-    status: string
-    created_at: string
-  }
-}
+export const placePrediction = async (
+  data: PlacePredictionRequest,
+): Promise<Prediction> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/predictions/place`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
 
-export async function createPrediction(data: CreatePredictionRequest): Promise<CreatePredictionResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/predictions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message || "Failed to create prediction")
-  }
-
-  return response.json()
-}
-
-export interface PredictionsResponse {
-  status: string
-  message: string
-  data: {
-    stats: {
-      activePredictions: number
-      totalStaked: number
-      totalRewards: number
-      avgAccuracy: number
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Failed to place prediction")
     }
-    predictions: Array<{
-      id: string
-      pool_id: string
-      user_wallet: string
-      amount: number
-      reward: number | null
-      status: "pending" | "completed"
-      created_at: string
-      pools: PoolResponse
-    }>
+
+    const result: ApiResponse<Prediction> = await response.json()
+    return result.data
+  } catch (error) {
+    console.error("[predictions] Error placing prediction:", error)
+    throw error
   }
 }
 
-export async function fetchUserPredictions(walletAddress: string): Promise<PredictionsResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/predictions/${walletAddress}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message || "Failed to fetch predictions")
-  }
-
-  return response.json()
+/**
+ * Get user's predictions with stats
+ * Matches backend PredictionsController.getUserBets signature
+ */
+export interface UserPredictionsResponse {
+  stats: UserStats
+  predictions: Prediction[]
 }
 
-export async function claimReward(
+export const fetchUserPredictions = async (
+  walletAddress: string,
+): Promise<UserPredictionsResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/predictions/user/${walletAddress}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Failed to fetch predictions")
+    }
+
+    const result: ApiResponse<UserPredictionsResponse> = await response.json()
+    return result.data
+  } catch (error) {
+    console.error("[predictions] Error fetching user predictions:", error)
+    throw error
+  }
+}
+
+/**
+ * Get all predictions for a specific pool
+ * Matches backend PredictionsController.getPoolBets signature
+ */
+export const fetchPoolPredictions = async (poolId: string): Promise<Prediction[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/predictions/pool/${poolId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Failed to fetch pool predictions")
+    }
+
+    const result: ApiListResponse<Prediction> = await response.json()
+    return result.data || []
+  } catch (error) {
+    console.error("[predictions] Error fetching pool predictions:", error)
+    throw error
+  }
+}
+
+/**
+ * Claim reward for a prediction
+ * Matches backend PredictionsController.claimReward signature
+ */
+export const claimReward = async (
   predictionId: string,
-  userWallet: string
-): Promise<{ status: string; message: string; data: { reward: number; status: string } }> {
-  const response = await fetch(`${API_BASE_URL}/api/predictions/${predictionId}/claim`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ userWallet }),
-  })
+): Promise<Prediction> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/predictions/${predictionId}/claim`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    )
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message || "Failed to claim reward")
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Failed to claim reward")
+    }
+
+    const result: ApiResponse<Prediction> = await response.json()
+    return result.data
+  } catch (error) {
+    console.error("[predictions] Error claiming reward:", error)
+    throw error
   }
+}
 
-  return response.json()
+/**
+ * Update a prediction (e.g., change prediction value before pool starts)
+ * Matches backend PredictionsController.updateBetPrediction signature
+ */
+export interface UpdatePredictionRequest {
+  prediction: number
+}
+
+export const updatePrediction = async (
+  predictionId: string,
+  data: UpdatePredictionRequest,
+): Promise<Prediction> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/predictions/${predictionId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Failed to update prediction")
+    }
+
+    const result: ApiResponse<Prediction> = await response.json()
+    return result.data
+  } catch (error) {
+    console.error("[predictions] Error updating prediction:", error)
+    throw error
+  }
 }

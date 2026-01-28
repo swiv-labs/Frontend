@@ -1,21 +1,25 @@
 "use client"
 
 import { motion } from "framer-motion"
-import type { Pool } from "@/lib/store/slices/poolsSlice"
+import type { Pool } from "@/lib/types/models"
 import { useEffect, useState } from "react"
 
 interface PoolStatsProps {
   pool: Pool
 }
 
+/**
+ * Pool statistics panel
+ * Displays key pool metrics from the contract and database
+ */
 export function PoolStats({ pool }: PoolStatsProps) {
   const [timeLeft, setTimeLeft] = useState("")
 
   useEffect(() => {
     const updateCountdown = () => {
-      const deadline = new Date(pool.deadline)
-      const now = new Date()
-      const diff = deadline.getTime() - now.getTime()
+      const endTime = pool.end_time * 1000 // Convert to milliseconds
+      const now = Date.now()
+      const diff = endTime - now
 
       if (diff <= 0) {
         setTimeLeft("Ended")
@@ -27,54 +31,39 @@ export function PoolStats({ pool }: PoolStatsProps) {
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       const seconds = Math.floor((diff % (1000 * 60)) / 1000)
 
-      setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`)
+      if (days > 0) {
+        setTimeLeft(`${days}d ${hours}h`)
+      } else if (hours > 0) {
+        setTimeLeft(`${hours}h ${minutes}m`)
+      } else {
+        setTimeLeft(`${minutes}m ${seconds}s`)
+      }
     }
 
     updateCountdown()
     const interval = setInterval(updateCountdown, 1000)
 
     return () => clearInterval(interval)
-  }, [pool.deadline])
+  }, [pool.end_time])
 
   const stats = [
     {
-      label: "Pool Size",
-      value: `$${pool.poolSize.toLocaleString()}`,
-      icon: "💰",
+      label: "Vault Balance",
+      value: `${(pool.vault_balance / 1_000_000).toFixed(2)}`,
+      unit: "tokens",
     },
     {
-      label: "Participants",
-      value: `${pool.participants.toLocaleString()}`,
-      icon: "👥",
+      label: "Total Participants",
+      value: pool.total_participants.toLocaleString(),
     },
-    // ...(pool.entryFee
-    //   ? [
-    //       {
-    //         label: "Entry Fee",
-    //         value: `$${pool.entryFee.toLocaleString()}`,
-    //         icon: "🎫",
-    //       },
-    //     ]
-    //   : []),
     {
-      label: "Time Left",
-      value: timeLeft,
-      icon: "⏰",
+      label: "Accuracy Buffer",
+      value: pool.max_accuracy_buffer || "N/A",
     },
-    // {
-    //   label: "Current Price",
-    //   value: pool.currentPrice ? `$${pool.currentPrice.toLocaleString()}` : "Loading...",
-    //   icon: "📊",
-    // },
-    // ...(pool.targetPrice
-    //   ? [
-    //       {
-    //         label: "Target Price",
-    //         value: `$${pool.targetPrice.toLocaleString()}`,
-    //         icon: "🎯",
-    //       },
-    //     ]
-    //   : []),
+    {
+      label: "Conviction Bonus",
+      value: `${pool.conviction_bonus_bps} bps`,
+    },
   ]
 
   return (
@@ -84,32 +73,67 @@ export function PoolStats({ pool }: PoolStatsProps) {
       transition={{ delay: 0.2 }}
       className="space-y-4"
     >
-      <h2 className="text-xl font-bold text-foreground mb-4">Pool Statistics</h2>
+      <h2 className="text-xl font-bold text-foreground mb-4">Pool Details</h2>
 
       {stats.map((stat, index) => (
-        <div
+        <motion.div
           key={index}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 * (index + 1) }}
           className="p-4 rounded-xl border border-border hover:border-primary/50 transition-smooth"
         >
-          <div className="flex items-center gap-3 mb-2">
-            {/* <span className="text-2xl">{stat.icon}</span> */}
-            <span className="text-sm text-muted-foreground">{stat.label}</span>
+          <div className="text-sm text-muted-foreground mb-1">{stat.label}</div>
+          <div className="text-lg font-bold text-foreground font-mono">
+            {stat.value} {stat.unit && <span className="text-sm text-muted-foreground ml-1">{stat.unit}</span>}
           </div>
-          <div className="text-2xl font-bold text-foreground font-mono">{stat.value}</div>
-        </div>
+        </motion.div>
       ))}
 
-      {/* Deadline info */}
+      {/* Countdown */}
       <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
-        <div className="text-sm text-muted-foreground mb-1">Deadline</div>
-        <div className="text-base font-semibold text-primary">
-          {new Date(pool.deadline).toLocaleDateString("en-US", {
-            month: "long",
+        <div className="text-sm text-muted-foreground mb-1">Time Remaining</div>
+        <div className="text-xl font-bold text-primary font-mono">{timeLeft}</div>
+      </div>
+
+      {/* End Time */}
+      <div className="p-4 rounded-xl border border-border">
+        <div className="text-sm text-muted-foreground mb-1">Pool Ends At</div>
+        <div className="text-base font-semibold text-foreground">
+          {new Date(pool.end_time * 1000).toLocaleDateString("en-US", {
+            month: "short",
             day: "numeric",
             year: "numeric",
             hour: "2-digit",
             minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
           })}
+        </div>
+      </div>
+
+      {/* Pool Status */}
+      {pool.is_resolved && (
+        <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+          <div className="text-sm text-green-600 mb-1">Status</div>
+          <div className="text-base font-semibold text-green-600">Pool Resolved</div>
+          {pool.resolution_ts && (
+            <div className="text-xs text-green-600/70 mt-2">
+              Resolved at: {new Date(pool.resolution_ts * 1000).toLocaleString()}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* On-chain Info */}
+      <div className="p-3 rounded-lg bg-muted/50 text-xs space-y-2">
+        <div className="font-mono text-muted-foreground">
+          <span className="font-semibold">Pool Pubkey:</span>
+          <div className="truncate text-primary mt-1">{pool.pool_pubkey}</div>
+        </div>
+        <div className="font-mono text-muted-foreground">
+          <span className="font-semibold">Vault Pubkey:</span>
+          <div className="truncate text-primary mt-1">{pool.vault_pubkey}</div>
         </div>
       </div>
     </motion.div>

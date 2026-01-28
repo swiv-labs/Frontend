@@ -1,21 +1,28 @@
 "use client"
 
+import type { PoolStatus } from "@/lib/types/models"
+
 interface PoolsFiltersProps {
-  currentFilter: "all" | "ongoing" | "upcoming" | "pending" | "closed"
-  onFilterChange: (filter: PoolsFiltersProps["currentFilter"]) => void
+  currentFilter: PoolStatus | "all"
+  onFilterChange: (filter: PoolStatus | "all") => void
 }
 
 const filters = [
-  { value: "all", label: "All" },
-  { value: "ongoing", label: "Active" },
-  { value: "upcoming", label: "Expired" },
-  { value: "pending", label: "Resolved" },
+  { value: "all", label: "All Pools" },
+  { value: "active", label: "Active" },
+  { value: "resolved", label: "Resolved" },
+  { value: "settled", label: "Settled" },
+  { value: "closed", label: "Closed" },
 ] as const
 
+/**
+ * Pool status filters
+ * Uses backend PoolStatus enum values: active | resolved | settled | closed
+ */
 export function PoolsFilters({ currentFilter, onFilterChange }: PoolsFiltersProps) {
   return (
-    <div className="mb-4">
-      <div className="flex items-center text-sm">
+    <div className="mb-6">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
         {filters.map((filter) => {
           const active = currentFilter === filter.value
 
@@ -23,17 +30,13 @@ export function PoolsFilters({ currentFilter, onFilterChange }: PoolsFiltersProp
             <button
               key={filter.value}
               onClick={() => onFilterChange(filter.value)}
-              className={`relative p-1 px-5 transition-colors ${
+              className={`px-4 py-2 rounded-lg transition-all font-medium ${
                 active
-                  ? "text-primary border border-border"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
               }`}
             >
               {filter.label}
-
-              {/* {active && (
-                <span className="absolute left-0 -bottom-px h-0.5 w-full bg-green-400" />
-              )} */}
             </button>
           )
         })}

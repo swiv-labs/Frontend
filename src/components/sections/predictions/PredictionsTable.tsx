@@ -9,7 +9,7 @@ import { BarChart } from "lucide-react"
 import { useState } from "react"
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth"
 import { Connection, PublicKey } from "@solana/web3.js"
-import { claimRewards } from "@/lib/solana/place-bet"
+// import { claimRewards } from "@/lib/solana/place-bet"
 import { claimReward } from "@/lib/api/predictions"
 import { useToast } from "@/lib/hooks/useToast"
 
@@ -69,56 +69,56 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
     // return prediction.pools.status === "closed" && prediction.status === "resolved" 
   }
 
-  const handleClaimReward = async (prediction: Prediction) => {
-    console.log(authenticated, embeddedWallet)
-    if (!authenticated || !embeddedWallet) {
-      toast.error("Please connect your wallet first")
-      return
-    }
+  // const handleClaimReward = async (prediction: Prediction) => {
+  //   console.log(authenticated, embeddedWallet)
+  //   if (!authenticated || !embeddedWallet) {
+  //     toast.error("Please connect your wallet first")
+  //     return
+  //   }
 
-    setClaimingId(prediction.id)
-    try {
-      toast.info("Processing claim on blockchain...")
+  //   setClaimingId(prediction.id)
+  //   try {
+  //     toast.info("Processing claim on blockchain...")
 
-      const connection = new Connection(process.env.NEXT_PUBLIC_SOLANA_RPC_URL!, "confirmed")
-      const walletPublicKey = new PublicKey(embeddedWallet.address)
+  //     const connection = new Connection(process.env.NEXT_PUBLIC_SOLANA_RPC_URL!, "confirmed")
+  //     const walletPublicKey = new PublicKey(embeddedWallet.address)
 
-      console.log("[v0] Claiming reward for prediction:", prediction)
-      // Call blockchain claim function
-      const signature = await claimRewards(
-        connection,
-        walletPublicKey,
-        async (tx) => {
-          const signedTx = await embeddedWallet.signTransaction(tx)
-          return signedTx
-        },
-        {
-          poolId: prediction.pools.poolid,
-        },
-      )
+  //     console.log("[v0] Claiming reward for prediction:", prediction)
+  //     // Call blockchain claim function
+  //     const signature = await claimRewards(
+  //       connection,
+  //       walletPublicKey,
+  //       async (tx) => {
+  //         const signedTx = await embeddedWallet.signTransaction(tx)
+  //         return signedTx
+  //       },
+  //       {
+  //         poolId: prediction.pools.poolid,
+  //       },
+  //     )
 
-      console.log("[v0] Claim transaction confirmed:", signature)
-      toast.info("Updating backend...")
+  //     console.log("[v0] Claim transaction confirmed:", signature)
+  //     toast.info("Updating backend...")
 
-      // Call backend to update claim status
-      const backendResponse = await claimReward(prediction.id, embeddedWallet.address)
+  //     // Call backend to update claim status
+  //     const backendResponse = await claimReward(prediction.id, embeddedWallet.address)
 
-      // Update Redux store
-      dispatch(
-        updatePrediction({
-          ...prediction,
-          status: "completed",
-        }),
-      )
+  //     // Update Redux store
+  //     dispatch(
+  //       updatePrediction({
+  //         ...prediction,
+  //         status: "completed",
+  //       }),
+  //     )
 
-      toast.success("Reward claimed successfully!")
-    } catch (error: any) {
-      console.error("[v0] Claim reward error:", error)
-      toast.error(error.message || "Failed to claim reward")
-    } finally {
-      setClaimingId(null)
-    }
-  }
+  //     toast.success("Reward claimed successfully!")
+  //   } catch (error: any) {
+  //     console.error("[v0] Claim reward error:", error)
+  //     toast.error(error.message || "Failed to claim reward")
+  //   } finally {
+  //     setClaimingId(null)
+  //   }
+  // }
 
   if (predictions.length === 0) {
     return (
@@ -209,7 +209,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                   <span className="text-sm text-muted-foreground">{formatDate(prediction.created_at)}</span>
                 </td>
                 <td className="py-3 px-4">
-                  {canClaimReward(prediction) ? (
+                  {/* {canClaimReward(prediction) ? (
                     <button
                       onClick={() => handleClaimReward(prediction)}
                       disabled={claimingId === prediction.id}
@@ -217,9 +217,9 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                     >
                       {claimingId === prediction.id ? "Claiming..." : "Claim"}
                     </button>
-                  ) : (
+                  ) : ( */}
                     <span className="text-xs text-muted-foreground">-</span>
-                  )}
+                  {/* // )} */}
                 </td>
               </motion.tr>
             ))}

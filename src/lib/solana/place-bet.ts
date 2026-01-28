@@ -1,279 +1,65 @@
-import { Program, BN, AnchorProvider } from "@coral-xyz/anchor"
-import {
-    PublicKey,
-    SystemProgram,
-    Transaction,
-    Connection,
-} from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token"
-import type { SwivPrivacy } from "@/lib/types/idl"
-import IDL from "@/lib/idl/idl.json"
-import { encryptPrediction } from "./arcium-encryption"
-import {
-    deserializeLE,
-    getArciumProgAddress,
-    getClusterAccAddress,
-    getCompDefAccAddress,
-    getCompDefAccOffset,
-    getComputationAccAddress,
-    getExecutingPoolAccAddress,
-    getMempoolAccAddress,
-    getMXEAccAddress
-} from "@arcium-hq/client"
-import { randomBytes } from "crypto"
+/**
+ * Prediction/Bet placement
+ * This now delegates to the backend API which handles all contract interaction
+ * Frontend only submits the prediction and amount, backend manages encryption and TEE flow
+ */
 
-const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID!);
+import { placePrediction, claimReward } from "@/lib/api/predictions"
+import type { Prediction } from "@/lib/types/models"
 
 export interface PlaceBetParams {
-    poolId: number
-    predictedPrice: number
-    stakeAmount: number
+  poolId: string
+  predictedPrice: number
+  stakeAmount: number // In lamports or base token units
+  userWallet: string
 }
 
 export interface ClaimRewardsParams {
-    poolId: number
+  predictionId: string
 }
 
-export async function placeEncryptedBet(
-    connection: Connection,
-    embeddedWallet: any,
-    signTransaction: (tx: Transaction) => Promise<Transaction>,
-    params: PlaceBetParams,
-): Promise<{ signature: string; }> {
-    try {
-        console.log("[placeEncryptedBet] Starting encrypted bet placement...", embeddedWallet)
-        const walletPublicKey = new PublicKey(embeddedWallet.address)
+/**
+ * Place a bet/prediction on a pool
+ * Backend handles all Solana contract interaction and TEE encryption
+ */
+export async function placeEncryptedBet(params: PlaceBetParams): Promise<Prediction> {
+  try {
+    console.log("[placeEncryptedBet] Placing prediction via backend API...", {
+      poolId: params.poolId,
+      userWallet: params.userWallet,
+      amount: params.stakeAmount,
+    })
 
-        // Get user's token account (USDC)
-        const usdcMint = new PublicKey(process.env.NEXT_PUBLIC_USDC_TOKEN_MINT!)
-        const userTokenAccount = await getAssociatedTokenAddress(usdcMint, walletPublicKey)
+    const prediction = await placePrediction({
+      poolId: params.poolId,
+      userWallet: params.userWallet,
+      deposit: params.stakeAmount,
+      prediction: params.predictedPrice,
+    })
 
-        console.log("[placeEncryptedBet] Encrypting prediction...")
-
-        const wallet = {
-            publicKey: walletPublicKey,
-            signTransaction: embeddedWallet.signTransaction.bind(embeddedWallet),
-            signAllTransactions: async (txs: Transaction[]) => {
-                return Promise.all(txs.map(tx => embeddedWallet.signTransaction(tx)))
-            },
-        }
-
-        const provider = new AnchorProvider(
-            connection,
-            wallet as any,
-            AnchorProvider.defaultOptions(),
-        )
-
-        const encryptedData = await encryptPrediction(params.predictedPrice, provider, PROGRAM_ID)
-
-        // Derive PDAs
-        const [poolPda] = PublicKey.findProgramAddressSync(
-            [Buffer.from("pool"), new BN(params.poolId).toArrayLike(Buffer, "le", 8)],
-            PROGRAM_ID,
-        )
-
-        const [poolVaultPda] = PublicKey.findProgramAddressSync(
-            [Buffer.from("pool_vault"), new BN(params.poolId).toArrayLike(Buffer, "le", 8)],
-            PROGRAM_ID,
-        )
-
-        const [betPda] = PublicKey.findProgramAddressSync(
-            [Buffer.from("bet"), poolPda.toBuffer(), walletPublicKey.toBuffer()],
-            PROGRAM_ID,
-        )
-
-        const program = new Program(IDL as any, provider)
-
-        // Get Arcium accounts
-        const mxeAccount = getMXEAccAddress(PROGRAM_ID)
-        const mempoolAccount = getMempoolAccAddress(PROGRAM_ID)
-        const executingPool = getExecutingPoolAccAddress(PROGRAM_ID)
-        const processBetComputationOffset = new BN(randomBytes(8), "hex")
-        const computationAccount = getComputationAccAddress(
-            PROGRAM_ID,
-            processBetComputationOffset
-        )
-        const compDefAccount = getCompDefAccAddress(
-            PROGRAM_ID,
-            Buffer.from(getCompDefAccOffset("process_bet")).readUInt32LE()
-        )
-        const clusterAccount = getClusterAccAddress(768109697)
-        const bnNonce = new BN(deserializeLE(encryptedData.nonce).toString())
-
-        console.log("[placeEncryptedBet] Encrypted data prepared:", {
-            ciphertext: Array.from(encryptedData.ciphertext).slice(0, 8),
-            publicKey: Array.from(encryptedData.publicKey).slice(0, 8),
-            nonce: bnNonce.toString(),
-        })
-
-        console.log("[placeEncryptedBet] Building transaction...")
-
-        // Create transaction
-        const tx = await program.methods
-            .placeEncryptedBet(
-                processBetComputationOffset,
-                Array.from(encryptedData.ciphertext),
-                Array.from(encryptedData.publicKey),
-                bnNonce,
-            )
-            .accounts({
-                pool: poolPda,
-                poolVault: poolVaultPda,
-                bet: betPda,
-                userTokenAccount,
-                user: walletPublicKey,
-                payer: walletPublicKey,
-                mxeAccount,
-                mempoolAccount,
-                executingPool,
-                computationAccount,
-                compDefAccount,
-                clusterAccount,
-                tokenProgram: TOKEN_PROGRAM_ID,
-                systemProgram: SystemProgram.programId,
-                arciumProgram: getArciumProgAddress(),
-            })
-            .transaction()
-
-        const { blockhash } = await connection.getLatestBlockhash()
-        tx.recentBlockhash = blockhash
-        tx.feePayer = walletPublicKey
-
-        console.log("[placeEncryptedBet] Signing transaction...")
-        const signedTx = await signTransaction(tx)
-
-        console.log("[placeEncryptedBet] Sending transaction...")
-        const signature = await connection.sendRawTransaction(signedTx.serialize(), {
-            skipPreflight: false,
-            preflightCommitment: 'confirmed',
-        })
-
-        console.log("[placeEncryptedBet] Confirming transaction...")
-        await connection.confirmTransaction(signature, "confirmed")
-        console.log("[placeEncryptedBet] Bet placed successfully:", signature)
-
-        return {
-            signature,
-        }
-    } catch (error: any) {
-        console.error("[placeEncryptedBet] Place bet error:", error)
-
-        if ("logs" in error) {
-            console.error("[placeEncryptedBet] Transaction logs:", error.logs)
-        } else if (error.getLogs) {
-            try {
-                const logs = await error.getLogs()
-                console.error("[placeEncryptedBet] Detailed logs:", logs)
-            } catch (e) {
-                console.error("[placeEncryptedBet] Could not fetch logs")
-            }
-        }
-
-        throw error
-    }
+    console.log("[placeEncryptedBet] Prediction placed successfully:", prediction.id)
+    return prediction
+  } catch (error) {
+    console.error("[placeEncryptedBet] Failed to place prediction:", error)
+    throw error
+  }
 }
 
-export async function claimRewards(
-    connection: Connection,
-    walletPublicKey: PublicKey,
-    signTransaction: (tx: Transaction) => Promise<Transaction>,
-    params: ClaimRewardsParams,
-): Promise<string> {
-    try {
-        console.log("[v0] Starting claim rewards...")
-        console.log("[v0] Pool ID:", params.poolId)
+/**
+ * Claim reward for a prediction
+ */
+export async function claimPredictionReward(
+  params: ClaimRewardsParams,
+): Promise<Prediction> {
+  try {
+    console.log("[claimPredictionReward] Claiming reward for prediction:", params.predictionId)
 
-        // Get user's token account (USDC)
-        const usdcMint = new PublicKey(process.env.NEXT_PUBLIC_USDC_TOKEN_MINT!)
-        const userTokenAccount = await getAssociatedTokenAddress(usdcMint, walletPublicKey)
-        console.log("[v0] User token account:", userTokenAccount.toBase58())
+    const updatedPrediction = await claimReward(params.predictionId)
 
-        // Derive PDAs
-        const [poolPda] = PublicKey.findProgramAddressSync(
-            [Buffer.from("pool"), new BN(params.poolId).toArrayLike(Buffer, "le", 8)],
-            PROGRAM_ID,
-        )
-
-        const [poolVaultPda] = PublicKey.findProgramAddressSync(
-            [Buffer.from("pool_vault"), new BN(params.poolId).toArrayLike(Buffer, "le", 8)],
-            PROGRAM_ID,
-        )
-
-        const [betPda] = PublicKey.findProgramAddressSync(
-            [Buffer.from("bet"), poolPda.toBuffer(), walletPublicKey.toBuffer()],
-            PROGRAM_ID,
-        )
-
-        console.log("[v0] Derived PDAs:", {
-            poolPda: poolPda.toBase58(),
-            poolVaultPda: poolVaultPda.toBase58(),
-            betPda: betPda.toBase58(),
-        })
-
-        // Create program instance
-        const program = new Program (
-            IDL as any,
-            {
-                connection,
-                publicKey: walletPublicKey,
-            } as any,
-        )
-
-        // Get Arcium accounts
-        const mxeAccount = getMXEAccAddress(PROGRAM_ID)
-        const mempoolAccount = getMempoolAccAddress(PROGRAM_ID)
-        const executingPool = getExecutingPoolAccAddress(PROGRAM_ID)
-        const claimRewardComputationOffset = new BN(randomBytes(8), "hex")
-        const computationAccount = getComputationAccAddress(
-            PROGRAM_ID,
-            claimRewardComputationOffset
-        )
-        const compDefAccount = getCompDefAccAddress(
-            PROGRAM_ID,
-            Buffer.from(getCompDefAccOffset("calculate_reward_v2")).readUInt32LE()
-        )
-        const clusterAccount = getClusterAccAddress(768109697)
-
-        console.log("[v0] Building claim transaction...")
-        const tx = await program.methods
-            .calculateRewardV2(claimRewardComputationOffset)
-            .accounts({
-                pool: poolPda,
-                poolVault: poolVaultPda,
-                bet: betPda,
-                userTokenAccount,
-                user: walletPublicKey,
-                payer: walletPublicKey,
-                mxeAccount: mxeAccount,
-                mempoolAccount: mempoolAccount,
-                executingPool: executingPool,
-                computationAccount: computationAccount,
-                compDefAccount: compDefAccount,
-                clusterAccount: clusterAccount,
-                tokenProgram: TOKEN_PROGRAM_ID,
-                systemProgram: SystemProgram.programId,
-                arciumProgram: getArciumProgAddress(),
-            })
-            .transaction()
-
-        // Get recent blockhash
-        const { blockhash } = await connection.getLatestBlockhash()
-        tx.recentBlockhash = blockhash
-        tx.feePayer = walletPublicKey
-
-        console.log("[v0] Signing claim transaction...")
-        const signedTx = await signTransaction(tx)
-
-        console.log("[v0] Sending claim transaction...")
-        const signature = await connection.sendRawTransaction(signedTx.serialize())
-
-        console.log("[v0] Confirming claim transaction...")
-        await connection.confirmTransaction(signature, "confirmed")
-
-        console.log("[v0] Claim transaction successful:", signature)
-        return signature
-    } catch (error) {
-        console.error("[v0] Claim rewards error:", error)
-        throw error
-    }
+    console.log("[claimPredictionReward] Reward claimed successfully")
+    return updatedPrediction
+  } catch (error) {
+    console.error("[claimPredictionReward] Failed to claim reward:", error)
+    throw error
+  }
 }

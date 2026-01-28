@@ -1,35 +1,16 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-
-export interface Pool {
-  id: string
-  asset: string
-  symbol: string
-  poolSize: number
-  participants: number
-  deadline: string
-  status: "ongoing" | "upcoming" | "closed"
-  currentPrice?: number
-  icon: string
-  // Blockchain-specific fields
-  targetPrice?: number
-  finalPrice?: number | null
-  entryFee?: number
-  maxParticipants?: number
-  poolPubkey?: string
-  vaultPubkey?: string
-  poolId?: number
-  blockchainSignature?: string
-  creator?: string
-}
+import type { Pool, PoolStatus } from "@/lib/types/models"
 
 interface PoolsState {
   pools: Pool[]
+  currentPool: Pool | null
   loading: boolean
   error: string | null
 }
 
 const initialState: PoolsState = {
   pools: [],
+  currentPool: null,
   loading: false,
   error: null,
 }
@@ -42,10 +23,25 @@ const poolsSlice = createSlice({
       state.pools = action.payload
       state.error = null
     },
-    updatePoolPrice: (state, action: PayloadAction<{ id: string; price: number }>) => {
-      const pool = state.pools.find((p) => p.id === action.payload.id)
-      if (pool) {
-        pool.currentPrice = action.payload.price
+    setCurrentPool: (state, action: PayloadAction<Pool | null>) => {
+      state.currentPool = action.payload
+    },
+    updatePool: (state, action: PayloadAction<Pool>) => {
+      const index = state.pools.findIndex((p) => p.id === action.payload.id)
+      if (index !== -1) {
+        state.pools[index] = action.payload
+      }
+      if (state.currentPool?.id === action.payload.id) {
+        state.currentPool = action.payload
+      }
+    },
+    addPool: (state, action: PayloadAction<Pool>) => {
+      state.pools.push(action.payload)
+    },
+    removePool: (state, action: PayloadAction<string>) => {
+      state.pools = state.pools.filter((p) => p.id !== action.payload)
+      if (state.currentPool?.id === action.payload) {
+        state.currentPool = null
       }
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -55,8 +51,24 @@ const poolsSlice = createSlice({
       state.error = action.payload
       state.loading = false
     },
+    clearError: (state) => {
+      state.error = null
+    },
   },
 })
 
-export const { setPools, updatePoolPrice, setLoading, setError } = poolsSlice.actions
+export const {
+  setPools,
+  setCurrentPool,
+  updatePool,
+  addPool,
+  removePool,
+  setLoading,
+  setError,
+  clearError,
+} = poolsSlice.actions
+
 export default poolsSlice.reducer
+
+// Export type for use in components
+export type { Pool }

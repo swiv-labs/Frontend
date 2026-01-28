@@ -4,51 +4,27 @@ import { PageLayout } from "@/components/layout/PageLayout"
 import { PoolsFilters } from "@/components/sections/pools/PoolsFilter"
 import { PoolsGrid } from "@/components/sections/pools/PoolsGrid"
 import { LoadingScreen } from "@/components/ui/LoadigSpinner"
-import { fetchCryptoPrice } from "@/lib/api/coingecko"
 import { getAllPools } from "@/lib/api/pools"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
-import { setError, setLoading, setPools, updatePoolPrice } from "@/lib/store/slices/poolsSlice"
+import { setError, setLoading, setPools } from "@/lib/store/slices/poolsSlice"
 import { useState, useEffect } from "react"
+import type { PoolStatus } from "@/lib/types/models"
 
 export default function PoolsPage() {
   const dispatch = useAppDispatch()
   const { pools, loading, error } = useAppSelector((state) => state.pools)
-  const [filter, setFilter] = useState<"all" | "ongoing" | "upcoming" | "closed">("all")
+  const [filter, setFilter] = useState<PoolStatus | "all">("all")
 
   useEffect(() => {
     const loadPools = async () => {
       dispatch(setLoading(true))
 
       try {
-        const apiPools = await getAllPools()
+        const status = filter === "all" ? undefined : (filter as PoolStatus)
+        const apiPools = await getAllPools(status)
         dispatch(setPools(apiPools))
-
-        const uniqueSymbols = [...new Set(apiPools.map((pool) => pool.symbol))]
-        const symbolToCoinGeckoId: Record<string, string> = {
-          BTC: "bitcoin",
-          ETH: "ethereum",
-          SOL: "solana",
-          ADA: "cardano",
-          DOT: "polkadot",
-          AVAX: "avalanche",
-        }
-
-        for (const symbol of uniqueSymbols) {
-          const coinGeckoId = symbolToCoinGeckoId[symbol]
-          if (coinGeckoId) {
-            const price = await fetchCryptoPrice(coinGeckoId)
-            if (price) {
-              // Update all pools with this symbol
-              apiPools.forEach((pool) => {
-                if (pool.symbol === symbol) {
-                  dispatch(updatePoolPrice({ id: pool.id, price }))
-                }
-              })
-            }
-          }
-        }
       } catch (err) {
-        console.error("[v0] Error loading pools:", err)
+        console.error("[pools] Error loading pools:", err)
         dispatch(setError("Failed to load pools. Please try again later."))
       } finally {
         dispatch(setLoading(false))
@@ -56,9 +32,7 @@ export default function PoolsPage() {
     }
 
     loadPools()
-  }, [dispatch])
-
-  const filteredPools = filter === "all" ? pools : pools.filter((pool) => pool.status === filter)
+  }, [dispatch, filter])
 
   if (loading && pools.length === 0) {
     return <LoadingScreen />
@@ -87,9 +61,9 @@ export default function PoolsPage() {
   return (
     <PageLayout>
       <div className="min-h-screen py-2">
-        <div className="">
+        <div>
           <PoolsFilters currentFilter={filter} onFilterChange={setFilter} />
-          <PoolsGrid pools={filteredPools} />
+          <PoolsGrid pools={pools} />
         </div>
       </div>
     </PageLayout>

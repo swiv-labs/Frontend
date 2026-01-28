@@ -3,21 +3,22 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { PageLayout } from "@/components/layout/PageLayout"
-import { ParticipantsTable } from "@/components/sections/pools-details/ParticipantsTable"
 import { PoolDetailsHeader } from "@/components/sections/pools-details/PoolDetilasHeader"
 import { PoolStats } from "@/components/sections/pools-details/PoolStats"
-import { PredictionModal } from "@/components/sections/pools-details/PredictionModal"
 import { PriceChart } from "@/components/sections/pools-details/PriceChart"
 import { LoadingScreen } from "@/components/ui/LoadigSpinner"
 import { fetchHistoricalPrices } from "@/lib/api/coingecko"
-import { Pool } from "@/lib/store/slices/poolsSlice"
 import { getPoolById } from "@/lib/api/pools"
+import { useAppDispatch } from "@/lib/store/hooks"
+import { setCurrentPool } from "@/lib/store/slices/poolsSlice"
 import Link from "next/link"
+import type { Pool } from "@/lib/types/models"
+import { InlineBettingPanel } from "@/components/sections/pools-details/InlineBettingPanel"
 
 export default function PoolDetailsPage() {
   const params = useParams()
+  const dispatch = useAppDispatch()
   const [pool, setPool] = useState<Pool | null>(null)
-  const [showModal, setShowModal] = useState(false)
   const [historicalData, setHistoricalData] = useState<Array<{ timestamp: number; price: number }>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,23 +28,13 @@ export default function PoolDetailsPage() {
       try {
         const poolData = await getPoolById(params.id as string)
         setPool(poolData)
+        dispatch(setCurrentPool(poolData))
 
-        const symbolToCoinGeckoId: Record<string, string> = {
-          BTC: "bitcoin",
-          ETH: "ethereum",
-          SOL: "solana",
-          ADA: "cardano",
-          DOT: "polkadot",
-          AVAX: "avalanche",
-        }
-
-        const coinGeckoId = symbolToCoinGeckoId[poolData.symbol]
-        if (coinGeckoId) {
-          const data = await fetchHistoricalPrices(coinGeckoId, 30)
-          setHistoricalData(data)
-        }
+        // Fetch historical price data if available
+        // Note: Update this to use actual token data once we have price feeds integrated
+        // For now, we'll skip historical data
       } catch (err) {
-        console.error("[v0] Error loading pool:", err)
+        console.error("[pools-details] Error loading pool:", err)
         setError("Failed to load pool details")
       } finally {
         setLoading(false)
@@ -51,7 +42,7 @@ export default function PoolDetailsPage() {
     }
 
     loadPoolData()
-  }, [params.id])
+  }, [params.id, dispatch])
 
   if (loading) {
     return <LoadingScreen />
@@ -81,22 +72,23 @@ export default function PoolDetailsPage() {
     <PageLayout>
       <div className="min-h-screen py-4">
         <div className="mx-auto max-w-7xl">
-          <PoolDetailsHeader pool={pool} onPredict={() => setShowModal(true)} />
+          <PoolDetailsHeader pool={pool} />
 
+          {/* Main Layout: Chart on left, Betting Panel on right */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div className="lg:col-span-2">
+            {/* Left side: Pool info and chart */}
+            <div className="lg:col-span-2 space-y-6">
               <PriceChart pool={pool} historicalData={historicalData} />
-            </div>
-            <div>
               <PoolStats pool={pool} />
             </div>
-          </div>
 
-          <ParticipantsTable poolId={pool.id} />
+            {/* Right side: Inline betting panel */}
+            <div>
+              <InlineBettingPanel pool={pool} />
+            </div>
+          </div>
         </div>
       </div>
-
-      {showModal && <PredictionModal pool={pool} onClose={() => setShowModal(false)} />}
     </PageLayout>
   )
 }

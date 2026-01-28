@@ -41,9 +41,9 @@ export function Footer() {
           {/* Logo */}
           <Logo />
 
-          {/* Powered by Arcium */}
+          {/* Tagline */}
           <p className="text-sm text-muted-foreground">
-            Powered by <span className="text-primary font-semibold">Arcium</span>
+            Decentralized Prediction Markets on <span className="text-primary font-semibold">Solana</span>
           </p>
 
           {/* Social Links */}
