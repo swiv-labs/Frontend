@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "bernardmarr.com",
         pathname: "/wp-content/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "quark.house",
+        pathname: "/wp-content/uploads/**",
+      },
     ],
   },
 };

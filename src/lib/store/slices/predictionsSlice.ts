@@ -1,14 +1,26 @@
 import { PoolResponse } from "@/lib/api/pools"
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
+
+export type BetStatus = 'initialized' | 'active' | 'calculated' | 'claimed';
+
 export interface Prediction {
-  id: string
-  pool_id: string
-  user_wallet: string
-  amount: number
-  reward: number | null
-  status: "pending" | "resolved" | "completed"
-  created_at: string
+  id: string;
+  user_wallet: string;
+  pool_pubkey: string;
+  pool_id: number;
+  deposit: number;
+  prediction: number;
+  calculated_weight: string;
+  is_weight_added: boolean;
+  status: BetStatus;
+  creation_ts: number;
+  update_count: number;
+  end_timestamp: number;
+  bet_pubkey: string;
+  reward?: number;
+  created_at: string;
+  last_synced_at: string;
   pools: PoolResponse
 }
 
@@ -38,7 +50,7 @@ const initialState: PredictionsState = {
 
 // Load from localStorage if available
 if (typeof window !== "undefined") {
-  const saved = localStorage.getItem("cyphercast_predictions")
+  const saved = localStorage.getItem("predictions")
   if (saved) {
     try {
       Object.assign(initialState, JSON.parse(saved))
@@ -69,13 +81,13 @@ const predictionsSlice = createSlice({
       state.loading = false
       state.error = null
       if (typeof window !== "undefined") {
-        localStorage.setItem("cyphercast_predictions", JSON.stringify(state))
+        localStorage.setItem("predictions", JSON.stringify(state))
       }
     },
     addPrediction: (state, action: PayloadAction<Prediction>) => {
       state.predictions.unshift(action.payload)
       if (typeof window !== "undefined") {
-        localStorage.setItem("cyphercast_predictions", JSON.stringify(state))
+        localStorage.setItem("predictions", JSON.stringify(state))
       }
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -89,7 +101,7 @@ const predictionsSlice = createSlice({
       if (index !== -1) {
         state.predictions[index] = action.payload
         if (typeof window !== "undefined") {
-          localStorage.setItem("cyphercast_predictions", JSON.stringify(state))
+          localStorage.setItem("predictions", JSON.stringify(state))
         }
       }
     },

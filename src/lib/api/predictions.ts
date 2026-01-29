@@ -54,6 +54,13 @@ export const placePrediction = async (
  * Get user's predictions with stats
  * Matches backend PredictionsController.getUserBets signature
  */
+export interface UserPredictionsApiResponse {
+  data: {
+    stats: UserStats
+    predictions: Prediction[]
+  }
+}
+
 export interface UserPredictionsResponse {
   stats: UserStats
   predictions: Prediction[]
@@ -61,9 +68,9 @@ export interface UserPredictionsResponse {
 
 export const fetchUserPredictions = async (
   walletAddress: string,
-): Promise<UserPredictionsResponse> => {
+): Promise<UserPredictionsApiResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/predictions/user/${walletAddress}`, {
+    const response = await fetch(`${API_BASE_URL}/api/predictions/${walletAddress}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -75,7 +82,8 @@ export const fetchUserPredictions = async (
       throw new Error(error.message || "Failed to fetch predictions")
     }
 
-    const result: ApiResponse<UserPredictionsResponse> = await response.json()
+    const result: ApiResponse<UserPredictionsApiResponse> = await response.json()
+    console.log("Fetched user predictions:", result.data)
     return result.data
   } catch (error) {
     console.error("[predictions] Error fetching user predictions:", error)

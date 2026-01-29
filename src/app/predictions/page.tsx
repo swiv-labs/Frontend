@@ -22,6 +22,7 @@ export default function PredictionsPage() {
       dispatch(setLoading(true))
       fetchUserPredictions(address)
         .then((response) => {
+          console.log("Fetched predictions:", response)
           dispatch(
             setPredictions({
               predictions: response.predictions,

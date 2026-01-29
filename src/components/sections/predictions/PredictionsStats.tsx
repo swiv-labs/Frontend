@@ -10,11 +10,12 @@ interface PredictionsStatsProps {
     activePredictions: number
     totalStaked: number
     totalRewards: number
-    avgAccuracy: number
+    totalClaimed: number
   }
 }
 
 export function PredictionsStats({ predictions, stats }: PredictionsStatsProps) {
+  console.log("PredictionsStats props:", { predictions, stats })  
   const statsList = [
     {
       label: "Active Predictions",
@@ -36,7 +37,7 @@ export function PredictionsStats({ predictions, stats }: PredictionsStatsProps) 
     },
     {
       label: "Avg. Accuracy",
-      value: `${stats.avgAccuracy.toFixed(1)}%`,
+      value: `${stats.totalClaimed.toFixed(1)}%`,
       icon: <TrendingUp size={30} />,
       color: "text-primary",
     },

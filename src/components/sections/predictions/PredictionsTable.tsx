@@ -183,21 +183,21 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                     href={`/pools/${prediction.pool_id}`}
                     className="font-semibold text-foreground hover:text-primary transition-smooth"
                   >
-                    {prediction.pools.asset_symbol}
+                    {/* {prediction.pools.name} */}Bitcoin Price at 11:59 PM UTC on January 28, 2026
                   </Link>
                 </td>
                 <td className="py-3 px-4">
                   <span className="font-mono text-sm text-foreground">
-                    ${prediction.pools.target_price.toLocaleString()}
+                    {/* ${prediction.pools.target_price.toLocaleString()} */} $20,000
                   </span>
                 </td>
                 <td className="py-3 px-4">
                   <span className="font-mono text-sm text-foreground">
-                    {prediction.pools.final_price ? `$${prediction.pools.final_price.toLocaleString()}` : "-"}
+                    {/* {prediction.pools.final_price ? `$${prediction.pools.final_price.toLocaleString()}` : "-"} */} $50,000
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <span className="text-sm text-foreground">${prediction.amount.toLocaleString()}</span>
+                  <span className="text-sm text-foreground">${prediction.deposit.toLocaleString()}</span>
                 </td>
                 <td className="py-3 px-4">
                   <span className="text-sm font-semibold text-green-400">
