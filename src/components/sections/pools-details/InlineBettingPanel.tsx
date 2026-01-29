@@ -63,7 +63,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
 
     // Validate prediction is within range
     if (prediction < MIN_PREDICTION || prediction > MAX_PREDICTION) {
-      toast.error(`Prediction must be between ${MIN_PREDICTION} and ${MAX_PREDICTION}`)
+      toast.error(`Prediction must be between ${MIN_PREDICTION.toFixed(2)} and ${MAX_PREDICTION.toFixed(2)}`)
       return
     }
 
@@ -80,42 +80,61 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
     setIsSubmitting(true)
 
     try {
-      // Convert deposit to lamports (assuming 6 decimals)
-      const depositInLamports = Math.floor(depositAmount * 1_000_000)
-
-      // Get signTransaction from Privy
-      const signTransaction = solanaWallet.signTransaction
-      if (!signTransaction) {
-        throw new Error("Wallet does not support transaction signing")
-      }
-
-      // TODO: Get user's token account address from blockchain
-      // For now, use a placeholder - in production, this should be fetched
-      const tokenAccountAddress = new PublicKey(
-        "11111111111111111111111111111111" // Placeholder
-      )
-
-      const result = await placeEncryptedBet({
+      // TODO: Implement full integration with place-bet.ts
+      // Current blockers:
+      // 1. Need access to Anchor Program instance
+      // 2. Need L1 Connection to Solana RPC
+      // 3. Need Protocol PDA and Vault PDA from contract
+      // 4. Need user's token account address (ATA lookup)
+      // 5. Need user's secret key from Privy for TEE signing
+      
+      toast.error("Bet placement integration in progress - check console logs")
+      
+      // Placeholder implementation shows data structure
+      console.log("[InlineBettingPanel] Attempting bet placement with:")
+      console.log({
         poolId: pool.id,
-        poolPubkey: new PublicKey(pool.pool_pubkey),
-        predictedPrice: prediction,
-        stakeAmount: depositInLamports,
-        userWallet: new PublicKey(solanaWallet.address),
-        tokenAccountAddress,
-        signTransaction,
+        poolPubkey: pool.pool_pubkey,
+        prediction,
+        depositAmount,
+        userWallet: solanaWallet.address,
       })
+      
+      // NEXT STEPS:
+      // 1. Create a useAnchorProgram hook to get Program instance
+      // 2. Create a useSolanaConnection hook to get L1 Connection
+      // 3. Query contract state to get Protocol PDA and Vault PDA
+      // 4. Use SPL Token library to get user's ATA
+      // 5. Export Privy's secret key for signing (check Privy docs)
+      // 6. Call placeEncryptedBet with all parameters
 
-      setPlacedPrediction(result)
-      toast.success("Prediction placed successfully!")
+      // const result = await placeEncryptedBet({
+      //   l1Connection,
+      //   program,
+      //   userWallet: new PublicKey(solanaWallet.address),
+      //   userSignerSecret: userPrivySecret, // From Privy
+      //   userTokenAccount: new PublicKey(userAta),
+      //   poolId: pool.id,
+      //   poolPubkey: new PublicKey(pool.pool_pubkey),
+      //   protocolPda: new PublicKey(protocolPda),
+      //   vaultPda: new PublicKey(vaultPda),
+      //   prediction: new anchor.BN(Math.floor(prediction * 1e6)), // Convert to BN with precision
+      //   stakeAmount: new anchor.BN(Math.floor(depositAmount * 1_000_000)), // Convert to lamports
+      //   requestId: `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      // })
+      //
+      // setPlacedPrediction(result)
+      // toast.success("Prediction placed successfully!")
+      //
+      // // Reset form
+      // setPrediction(MIN_PREDICTION)
+      // setDeposit("")
+      //
+      // // Clear success message after 5 seconds
+      // setTimeout(() => {
+      //   setPlacedPrediction(null)
+      // }, 5000)
 
-      // Reset form
-      setPrediction(MIN_PREDICTION)
-      setDeposit("")
-
-      // Clear success message after 5 seconds
-      setTimeout(() => {
-        setPlacedPrediction(null)
-      }, 5000)
     } catch (error: any) {
       console.error("[InlineBettingPanel] Error placing prediction:", error)
       toast.error(error.message || "Failed to place prediction")
