@@ -3,6 +3,7 @@
 import type { Pool } from "@/lib/types/models"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import Image from "next/image"
 
 interface PoolsGridProps {
   pools: Pool[]
@@ -68,36 +69,40 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
               </div>
 
               {/* Pool Info */}
-              <div className="space-y-4">
-                {/* Name */}
+              <div className="flex">
                 <div>
-                  <h3 className="font-bold text-foreground text-lg line-clamp-2 pr-20">{pool.name}</h3>
+                  <Image src={pool.metadata ? pool.metadata : "https://bernardmarr.com/wp-content/uploads/2025/01/bitcoin.jpg"} alt={"pool image"} width={100} height={100} />
                 </div>
+                <div className="space-y-4">
+                  {/* Name */}
+                  <div>
+                    <h3 className="font-bold text-foreground text-lg line-clamp-2 pr-20">{pool.name}</h3>
+                  </div>
 
-                {/* Key Stats */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground text-xs uppercase tracking-wide">Pool ID</p>
-                    <p className="font-mono text-sm font-semibold text-primary">{pool.pool_id}</p>
+                  {/* Key Stats */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wide">Pool ID</p>
+                      <p className="font-mono text-sm font-semibold text-primary">{pool.pool_id}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wide">Participants</p>
+                      <p className="font-semibold text-sm">{pool.total_participants}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wide">Pool Volume</p>
+                      <p className="font-mono text-sm font-semibold">${formatTokenAmount(pool.vault_balance)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wide">Time Left</p>
+                      <p className="font-semibold text-sm">
+                        {hoursRemaining}h {minutesRemaining}m
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs uppercase tracking-wide">Participants</p>
-                    <p className="font-semibold text-sm">{pool.total_participants}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs uppercase tracking-wide">Pool Volume</p>
-                    <p className="font-mono text-sm font-semibold">${formatTokenAmount(pool.vault_balance)}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs uppercase tracking-wide">Time Left</p>
-                    <p className="font-semibold text-sm">
-                      {hoursRemaining}h {minutesRemaining}m
-                    </p>
-                  </div>
-                </div>
 
-                {/* Pool Properties */}
-                <div className="pt-2 border-t border-border">
+                  {/* Pool Properties */}
+                  {/* <div className="pt-2 border-t border-border">
                   <div className="text-xs space-y-2">
                     {pool.max_accuracy_buffer && (
                       <div className="flex justify-between">
@@ -112,11 +117,12 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
                       </div>
                     )}
                   </div>
-                </div>
+                </div> */}
 
-                {/* Hover CTA */}
-                <div className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <p className="text-primary text-sm font-semibold">View Pool →</p>
+                  {/* Hover CTA */}
+                  <div className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-primary text-sm font-semibold">View Pool →</p>
+                  </div>
                 </div>
               </div>
             </Link>
