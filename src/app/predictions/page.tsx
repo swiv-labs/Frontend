@@ -24,8 +24,8 @@ export default function PredictionsPage() {
         .then((response) => {
           dispatch(
             setPredictions({
-              predictions: response.data.predictions,
-              stats: response.data.stats,
+              predictions: response.predictions,
+              stats: response.stats,
             }),
           )
         })

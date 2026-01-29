@@ -60,15 +60,15 @@ export function PoolDetailsHeader({ pool }: PoolDetailsHeaderProps) {
               <p className="text-lg font-bold text-foreground">{pool.total_participants}</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Vault Balance</p>
-              <p className="text-lg font-bold font-mono text-foreground">{(pool.vault_balance / 1_000_000).toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Volume</p>
+              <p className="text-lg font-bold font-mono text-foreground">${(pool.vault_balance / 1_000_000).toFixed(2)}</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/50">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Time Left</p>
               <p className="text-lg font-bold text-foreground">{hoursRemaining}h {minutesRemaining}m</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Bonus (bps)</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Time Bonus (bps)</p>
               <p className="text-lg font-bold font-mono text-foreground">{pool.conviction_bonus_bps}</p>
             </div>
           </div>

@@ -59,43 +59,43 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
           >
             <Link
               href={`/pools/${pool.id}`}
-              className="group relative block rounded-xl border border-border/50 bg-muted/30 p-6 transition-all hover:border-primary/50 hover:shadow-sm hover:shadow-primary/10"
+              className="group relative block rounded-xl border border-border/50 bg-muted/30 p-3 transition-all hover:border-primary/50 hover:shadow-sm hover:shadow-primary/10"
             >
               {/* Status Badge */}
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-2 right-4">
                 <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-semibold ${statusColor.bg} ${statusColor.text}`}>
                   {statusColor.label}
                 </span>
               </div>
 
               {/* Pool Info */}
-              <div className="flex">
-                <div>
-                  <Image src={pool.metadata ? pool.metadata : "https://bernardmarr.com/wp-content/uploads/2025/01/bitcoin.jpg"} alt={"pool image"} width={100} height={100} />
+              <div className="flex gap-2 w-full">
+                <div className="w-2/5">
+                  <Image className="w-full h-full object-cover rounded-lg" src={pool.metadata ? pool.metadata : "https://bernardmarr.com/wp-content/uploads/2025/01/bitcoin.jpg"} alt={"pool image"} width={200} height={200} />
                 </div>
-                <div className="space-y-4">
+                <div className="w-3/5 flex flex-col space-y-2">
                   {/* Name */}
                   <div>
-                    <h3 className="font-bold text-foreground text-lg line-clamp-2 pr-20">{pool.name}</h3>
+                    <h3 className="font-bold text-foreground text-base line-clamp-2 pr-20">{pool.name}</h3>
                   </div>
 
                   {/* Key Stats */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <p className="text-muted-foreground text-xs uppercase tracking-wide">Pool ID</p>
-                      <p className="font-mono text-sm font-semibold text-primary">{pool.pool_id}</p>
+                      <p className="font-mono text-xs font-semibold text-primary">{pool.pool_id}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground text-xs uppercase tracking-wide">Participants</p>
-                      <p className="font-semibold text-sm">{pool.total_participants}</p>
+                      <p className="font-semibold text-xs">{pool.total_participants}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground text-xs uppercase tracking-wide">Pool Volume</p>
-                      <p className="font-mono text-sm font-semibold">${formatTokenAmount(pool.vault_balance)}</p>
+                      <p className="font-mono text-xs font-semibold">${formatTokenAmount(pool.vault_balance)}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground text-xs uppercase tracking-wide">Time Left</p>
-                      <p className="font-semibold text-sm">
+                      <p className="font-semibold text-xs">
                         {hoursRemaining}h {minutesRemaining}m
                       </p>
                     </div>
@@ -120,9 +120,9 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
                 </div> */}
 
                   {/* Hover CTA */}
-                  <div className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* <div className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
                     <p className="text-primary text-sm font-semibold">View Pool →</p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </Link>

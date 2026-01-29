@@ -41,7 +41,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   // These are set when pool is created in the backend
   const MIN_PREDICTION = pool.min_prediction || 0
   const MAX_PREDICTION = pool.max_prediction || 1000
-  const STEP = (MAX_PREDICTION - MIN_PREDICTION) / 100
+  const STEP = (MAX_PREDICTION - MIN_PREDICTION) / 10000000
 
   const handlePredictionChange = (value: number) => {
     setPrediction(value)
@@ -194,7 +194,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
           {/* Deposit Amount */}
           <div>
             <label htmlFor="deposit" className="block text-sm font-medium text-foreground mb-2">
-              Deposit Amount (Token Units)
+              Deposit Amount (USDC)
             </label>
             <input
               id="deposit"
@@ -237,15 +237,6 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
               "Place Prediction"
             )}
           </button>
-
-          {/* Pool Info Hint */}
-          <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
-            <p className="text-xs text-muted-foreground">
-              <span className="font-semibold text-primary">Tip:</span> Use the slider to adjust your
-              prediction within the contract-defined range ({MIN_PREDICTION.toFixed(2)} -{" "}
-              {MAX_PREDICTION.toFixed(2)}). Higher accuracy earns more rewards.
-            </p>
-          </div>
         </form>
       )}
 
