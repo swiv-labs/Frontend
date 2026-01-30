@@ -37,42 +37,47 @@ import {
 } from "@magicblock-labs/ephemeral-rollups-sdk"
 import { placePrediction } from "@/lib/api/predictions"
 import type { Prediction } from "@/lib/types/models"
+import { BN, Program } from "@coral-xyz/anchor"
+import { SwivPrivacy } from "../types/idl"
+import { useSolanaWallets } from "@privy-io/react-auth"
+import { useSignTransaction } from '@privy-io/react-auth/solana';
 
-// ============================================================================
-// Constants (from contract tests)
-// ============================================================================
-
-const SEED_BET = Buffer.from("user_bet")
+export const SEED_BET = Buffer.from("user_bet");
+export const SEED_POOL = Buffer.from("pool");
+export const SEED_POOL_VAULT = Buffer.from("pool_vault");
+export const SEED_PROTOCOL = Buffer.from("protocol_v2");
 const TEE_VALIDATOR = new PublicKey("FnE6VJT5QNZdedZPnCoLsARgBwoE6DeJNjBs2H1gySXA")
 const TEE_URL = "https://tee.magicblock.app"
 const TEE_WS_URL = "wss://tee.magicblock.app"
 
+
+const provider = anchor.AnchorProvider.env();
+anchor.setProvider(provider);
+const program = anchor.workspace.SwivPrivacy as Program<SwivPrivacy>;
+const connection = new Connection(
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL!,
+  "confirmed",
+)
+
+const { signTransaction } = useSignTransaction();
+
+const { wallets } = useSolanaWallets()
+const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === "privy")
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-// ============================================================================
-// Types
-// ============================================================================
-
 export interface PlaceBetParams {
-  // L1 Solana context
   l1Connection: Connection
-  program: anchor.Program<any> // SwivPrivacy program
-  
-  // User context
+  program: anchor.Program<any>
   userWallet: PublicKey
-  userSignerSecret: Uint8Array // For TEE auth signing (from Privy)
-  userTokenAccount: PublicKey // ATA for token transfers
-  
-  // Pool context
-  poolId: string // Backend pool ID
-  poolPubkey: PublicKey // On-chain pool account
-  protocolPda: PublicKey // Protocol account
-  vaultPda: PublicKey // Pool vault
-  
-  // Bet details
-  prediction: anchor.BN // Predicted value (BN for precision)
-  stakeAmount: anchor.BN // Bet amount in smallest token units
-  requestId: string // Unique request ID for PDA derivation
+  userTokenAccount: PublicKey
+  poolId: string
+  poolPubkey: PublicKey
+  protocolPda: PublicKey
+  vaultPda: PublicKey
+  prediction: anchor.BN
+  stakeAmount: anchor.BN
+  requestId: string
 }
 
 export interface L1InitResult {
@@ -91,130 +96,130 @@ export interface TEEExecutionResult {
   delegationMetadata: PublicKey
 }
 
-// ============================================================================
-// Step 1: L1 Transaction - Setup Bet & Delegation
-// Mirrors: it("3.1. Secure Bet Setup (L1: Init & Delegate)")
-// ============================================================================
 
-/**
- * Initialize bet on L1 Solana and setup delegation to TEE
- * 
- * This combines 4 instructions into a single transaction:
- * 1. initBet - Create UserBet account, transfer tokens to vault
- * 2. createBetPermission - Create permission account for delegation
- * 3. delegateBetPermission - Setup delegation record
- * 4. delegateBet - Register delegation to TEE validator
- * 
- * All signed by the user (via Privy)
- */
 export async function initBetAndDelegate(params: PlaceBetParams): Promise<L1InitResult> {
   console.log("[L1] 🏗️  Initializing and delegating user bet on L1...")
 
-  // Derive bet PDA using exact test pattern
-  const [betPubkey] = PublicKey.findProgramAddressSync(
-    [SEED_BET, params.poolPubkey.toBuffer(), params.userWallet.toBuffer(), Buffer.from(params.requestId)],
-    params.program.programId,
-  )
-  const permissionPda = permissionPdaFromAccount(betPubkey)
+  const [protocolPda] = PublicKey.findProgramAddressSync(
+    [SEED_PROTOCOL],
+    program.programId,
+  );
 
-  console.log(`[L1]   👉 Bet PDA: ${betPubkey.toBase58()}`)
+  const [poolPda] = PublicKey.findProgramAddressSync(
+    [SEED_POOL, new BN(params.poolId).toArrayLike(Buffer, "le", 8)],
+    program.programId,
+  )
+
+  const [vaultPda] = PublicKey.findProgramAddressSync(
+    [SEED_POOL_VAULT, poolPda.toBuffer()],
+    program.programId,
+  );
+
+  const [betPda] = PublicKey.findProgramAddressSync(
+    [SEED_BET, poolPda.toBuffer(), params.userWallet.toBuffer()],
+    program.programId,
+  )
+
+  const permissionPda = permissionPdaFromAccount(betPda)
+
+  console.log(`[L1]   👉 Bet PDA: ${betPda.toBase58()}`)
   console.log(`[L1]   👉 Permission PDA: ${permissionPda.toBase58()}`)
 
-  // Build 4-instruction transaction (from test)
   const tx = new anchor.web3.Transaction().add(
-    // Instruction 1: Initialize bet account
-    await params.program.methods
+    await program.methods
       .initBet(params.stakeAmount, params.requestId)
       .accountsPartial({
         user: params.userWallet,
-        protocol: params.protocolPda,
-        pool: params.poolPubkey,
-        poolVault: params.vaultPda,
+        protocol: protocolPda,
+        pool: poolPda,
+        poolVault: vaultPda,
         userTokenAccount: params.userTokenAccount,
-        userBet: betPubkey,
+        userBet: betPda,
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
       })
       .instruction(),
-
-    // Instruction 2: Create permission account
-    await params.program.methods
+    await program.methods
       .createBetPermission(params.requestId)
       .accountsPartial({
         payer: params.userWallet,
         user: params.userWallet,
-        userBet: betPubkey,
-        pool: params.poolPubkey,
+        userBet: betPda,
+        pool: poolPda,
         permission: permissionPda,
         permissionProgram: PERMISSION_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
       })
       .instruction(),
-
-    // Instruction 3: Delegate permission to TEE
-    await params.program.methods
+    await program.methods
       .delegateBetPermission(params.requestId)
       .accountsPartial({
         user: params.userWallet,
-        pool: params.poolPubkey,
-        userBet: betPubkey,
+        pool: poolPda,
+        userBet: betPda,
         permission: permissionPda,
         permissionProgram: PERMISSION_PROGRAM_ID,
         delegationProgram: DELEGATION_PROGRAM_ID,
-        delegationRecord: delegationRecordPdaFromDelegatedAccount(permissionPda),
-        delegationMetadata: delegationMetadataPdaFromDelegatedAccount(permissionPda),
-        delegationBuffer: delegateBufferPdaFromDelegatedAccountAndOwnerProgram(
-          permissionPda,
-          PERMISSION_PROGRAM_ID,
-        ),
+        delegationRecord:
+          delegationRecordPdaFromDelegatedAccount(permissionPda),
+        delegationMetadata:
+          delegationMetadataPdaFromDelegatedAccount(permissionPda),
+        delegationBuffer:
+          delegateBufferPdaFromDelegatedAccountAndOwnerProgram(
+            permissionPda,
+            PERMISSION_PROGRAM_ID,
+          ),
         validator: TEE_VALIDATOR,
         systemProgram: SystemProgram.programId,
       })
       .instruction(),
-
-    // Instruction 4: Register delegation
-    await params.program.methods
+    await program.methods
       .delegateBet(params.requestId)
       .accountsPartial({
         user: params.userWallet,
-        pool: params.poolPubkey,
-        userBet: betPubkey,
+        pool: poolPda,
+        userBet: betPda,
         validator: TEE_VALIDATOR,
       })
       .instruction(),
-  )
+  );
 
-  // Send and confirm on L1
-  const txSignature = await sendAndConfirmTransaction(params.l1Connection, tx, [
-    // IMPORTANT: This is a workaround - in production, Privy signs the transaction
-    // For now, we create a temporary keypair, but frontend integration will use Privy's signTransaction
-    anchor.web3.Keypair.generate(),
-  ])
+  console.log(`[L1]   🚀 Sending transaction to initialize bet and delegation...`, tx)
+
+  const { blockhash } = await connection.getLatestBlockhash()
+  tx.recentBlockhash = blockhash
+  tx.feePayer = params.userWallet
+
+  console.log("[placeEncryptedBet] Signing transaction...")
+  const signedTx = await signTransaction({
+    transaction: tx,
+    connection
+  });
+
+  console.log("[placeEncryptedBet] Sending transaction...")
+  const txSignature = await connection.sendRawTransaction(signedTx.serialize(), {
+    skipPreflight: false,
+    preflightCommitment: 'confirmed',
+  })
+
+  console.log("[placeEncryptedBet] Confirming transaction...")
+  await connection.confirmTransaction(txSignature, "confirmed")
 
   console.log(`[L1]   ✅ L1 Transaction confirmed: ${txSignature}`)
   console.log(`[L1]   ⏳  Waiting for TEE to index delegation...`)
 
   // Wait for TEE to see the delegation
-  await waitUntilPermissionActive(TEE_URL, betPubkey)
+  await waitUntilPermissionActive(TEE_URL, betPda)
 
   console.log(`[L1]   ✨ TEE synchronization complete`)
 
   return {
-    betPubkey,
+    betPda,
     permissionPda,
     txSignature,
   }
 }
 
-// ============================================================================
-// Step 2: TEE Authentication
-// Helper to get auth token using Privy wallet signature
-// ============================================================================
-
-/**
- * Get auth token from TEE using user's Privy wallet signature
- * Mirrors: getAuthTokenWithRetry()
- */
 export async function getTeeAuthToken(
   endpoint: string,
   userPublicKey: PublicKey,
