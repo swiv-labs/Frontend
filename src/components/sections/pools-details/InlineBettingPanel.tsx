@@ -193,11 +193,11 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
             <input
               id="deposit"
               type="number"
-              step="0.01"
-              min="0"
+              step="1"
+              min="1"
               value={deposit}
               onChange={handleDepositChange}
-              placeholder="0.00"
+              placeholder="100"
               disabled={isSubmitting || !authenticated}
               className="w-full px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-smooth disabled:opacity-50"
             />

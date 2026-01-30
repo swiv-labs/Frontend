@@ -76,7 +76,7 @@ export async function initBetAndDelegate(params: PlaceBetParams): Promise<L1Init
   );
 
   const [poolPda] = PublicKey.findProgramAddressSync(
-    [SEED_POOL, new BN(params.poolId).toArrayLike(Buffer, "le", 8)],
+    [SEED_POOL, new PublicKey("7CaD6cJQEZ1KVfRkhgunCpQgaMgpUENzbHT3qFRsqm1j").toBuffer(), new BN(params.poolId).toArrayLike(Buffer, "le", 8)],
     program.programId,
   )
 
@@ -86,7 +86,7 @@ export async function initBetAndDelegate(params: PlaceBetParams): Promise<L1Init
   );
 
   const [betPda] = PublicKey.findProgramAddressSync(
-    [SEED_BET, poolPda.toBuffer(), params.userWallet.toBuffer()],
+    [SEED_BET, poolPda.toBuffer(), params.userWallet.toBuffer(), Buffer.from(params.requestId),],
     program.programId,
   )
 
@@ -227,6 +227,8 @@ export async function executeBetOnTee(params: {
     },
   )
 
+  console.log(`[TEE]   🔐 Obtained TEE auth token, ${TEE_URL}?token=${authToken.token}`)
+
   const teeConnection = new Connection(`${TEE_URL}?token=${authToken.token}`, {
     commitment: "confirmed",
     wsEndpoint: `${TEE_WS_URL}?token=${authToken.token}`,
@@ -254,18 +256,18 @@ export async function executeBetOnTee(params: {
     connection
   });
 
-  console.log("[placeEncryptedBet] on TEE Sending transaction...")
-  const signature = await connection.sendRawTransaction(signedTx.serialize(), {
+  console.log("[placeEncryptedBet] on TEE Sending transaction...", signedTx)
+  const signature = await teeConnection.sendRawTransaction(signedTx.serialize(), {
     skipPreflight: false,
     preflightCommitment: 'confirmed',
   })
 
   console.log("[placeEncryptedBet] on TEE Confirming transaction...")
-  await connection.confirmTransaction(signature, "confirmed")
+  await teeConnection.confirmTransaction(signature, "confirmed")
   const teeSignature = signature.toString()
 
   console.log(`[TEE]   ✅ Bet executed privately on TEE: ${teeSignature}`)
-  await sleep(1000) // Wait for TEE indexing
+  await sleep(1000) 
 
   return {
     teeSignature,
@@ -278,7 +280,6 @@ export async function saveBetToDatabase(params: {
   userWallet: PublicKey
   betPubkey: PublicKey
   stakeAmount: BN
-  prediction: BN
   requestId: string
   l1TxSignature: string
   teeTxSignature: string
@@ -290,7 +291,6 @@ export async function saveBetToDatabase(params: {
       poolId: params.poolId,
       userWallet: params.userWallet.toString(),
       deposit: params.stakeAmount.toNumber(),
-      prediction: params.prediction.toNumber(),
       requestId: params.requestId,
       bet_pubkey: params.betPubkey.toString(),
     })
@@ -338,7 +338,6 @@ export async function placeEncryptedBet(params: PlaceBetParams): Promise<Predict
       userWallet: params.userWallet,
       betPubkey: l1Result.betPda,
       stakeAmount: params.stakeAmount,
-      prediction: params.prediction,
       requestId: params.requestId,
       l1TxSignature: l1Result.txSignature,
       teeTxSignature: teeResult.teeSignature,
