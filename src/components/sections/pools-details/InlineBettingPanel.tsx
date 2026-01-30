@@ -88,11 +88,13 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
     const userTokenAccount = await getAssociatedTokenAddress(usdcMint, new PublicKey(solanaWallet.address))
     const userAta = userTokenAccount.toBase58()
 
+    console.log("Placing encrypted bet with:", pool)
+
     try {
       const result = await placeEncryptedBet({
         userWallet: new PublicKey(solanaWallet.address),
         userTokenAccount: new PublicKey(userAta),
-        poolId: pool.id,
+        poolId: pool.pool_id.toString(),
         poolPubkey: new PublicKey(pool.pool_pubkey),
         prediction: new BN(Math.floor(prediction * 1e6)),
         stakeAmount: new BN(Math.floor(depositAmount * 1000000)),
