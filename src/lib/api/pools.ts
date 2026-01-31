@@ -90,3 +90,28 @@ export const getPoolsByAdmin = async (adminWallet: string): Promise<Pool[]> => {
 export const getPoolsByStatus = async (status: PoolStatus): Promise<Pool[]> => {
   return getAllPools(status)
 }
+/**
+ * Finalize pool weights (after resolution)
+ * Backend calls finalize_weights instruction and persists finalized state
+ */
+export const finalizePoolWeights = async (poolId: string): Promise<Pool> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/pools/${poolId}/finalize`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Failed to finalize pool weights")
+    }
+
+    const result: ApiResponse<Pool> = await response.json()
+    return result.data
+  } catch (error) {
+    console.error("[pools] Error finalizing pool weights:", error)
+    throw error
+  }
+}

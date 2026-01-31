@@ -149,6 +149,49 @@ export const claimReward = async (
 }
 
 /**
+ * Persist claim record in backend after on-chain claim_reward tx is confirmed
+ * Backend only persists DB data; all signing and broadcasting happens in frontend
+ */
+export interface ClaimRewardDBRequest {
+  predictionId: string
+  userWallet: string
+  claimTxSignature: string
+  rewardAmount: number
+}
+
+export const claimRewardDB = async (
+  data: ClaimRewardDBRequest,
+): Promise<Prediction> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/predictions/${data.predictionId}/claim`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userWallet: data.userWallet,
+          claimTxSignature: data.claimTxSignature,
+          rewardAmount: data.rewardAmount,
+        }),
+      },
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Failed to persist claim record")
+    }
+
+    const result: ApiResponse<Prediction> = await response.json()
+    return result.data
+  } catch (error) {
+    console.error("[predictions] Error persisting claim record:", error)
+    throw error
+  }
+}
+
+/**
  * Update a prediction (e.g., change prediction value before pool starts)
  * Matches backend PredictionsController.updateBetPrediction signature
  */
