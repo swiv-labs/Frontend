@@ -36,8 +36,8 @@ export function PriceChart({ pool, historicalData }: PriceChartProps) {
       className="p-6 rounded-2xl border border-border"
     >
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-foreground mb-2">Price History</h2>
-        <p className="text-sm text-muted-foreground">30-day price chart for {pool.asset}</p>
+        <h2 className="text-base md:text-lg font-bold text-foreground mb-2">Price History</h2>
+        <p className="text-xs md:text-sm text-muted-foreground">30-day price chart for asset in quote</p>
       </div>
 
       {chartData.length > 0 ? (
@@ -65,7 +65,7 @@ export function PriceChart({ pool, historicalData }: PriceChartProps) {
         <div className="h-[400px] flex items-center justify-center">
           <div className="text-center">
             <div className="text-4xl w-full justify-center text-center flex mb-2"><TrendingUp/></div>
-            <p className="text-muted-foreground">Price data not available</p>
+            <p className="text-muted-foreground text-xs md:text-sm">Price data not available</p>
           </div>
         </div>
       )}

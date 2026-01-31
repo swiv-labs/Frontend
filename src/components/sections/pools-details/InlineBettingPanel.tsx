@@ -61,6 +61,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   }
 
   const handleClaimReward = async () => {
+    console.log("Claiming reward for prediction:", ready, authenticated, solanaWallet, userPrediction)
     if (!ready || !authenticated || !solanaWallet || !userPrediction) {
       toast.error("Please connect your wallet and select a prediction")
       return
