@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         hostname: "quark.house",
         pathname: "/wp-content/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "iibuedltvdvyumntledk.supabase.co",
+        pathname: "/storage/v1/object/public/pool/**",
+      },
     ],
   },
 };

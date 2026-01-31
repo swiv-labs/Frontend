@@ -30,7 +30,7 @@ export function PoolsFilters({ currentFilter, onFilterChange }: PoolsFiltersProp
             <button
               key={filter.value}
               onClick={() => onFilterChange(filter.value)}
-              className={`px-4 py-2 rounded-lg transition-all font-medium ${
+              className={`px-4 py-2 text-xs md:text-sm rounded-lg transition-all font-medium ${
                 active
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-muted/40 text-muted-foreground hover:bg-muted/80 hover:text-foreground"
