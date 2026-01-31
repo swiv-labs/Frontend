@@ -6,7 +6,6 @@ import { useAppSelector } from "@/lib/store/hooks"
 export default function RecentActivity() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
 
-  // Get recent predictions (last 10)
   const recentPredictions = [...predictions]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 10)
@@ -46,10 +45,10 @@ export default function RecentActivity() {
         <div className="space-y-4">
           {recentPredictions.map((prediction) => (
             <div key={prediction.id} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-900">
-              <div className="text-2xl">{getActivityIcon(prediction.status)}</div>
+              {/* <div className="text-2xl">{getActivityIcon(prediction.status)}</div> */}
               <div className="flex-1">
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  {prediction.status === "completed" ? "Completed" : "Placed"} prediction on {prediction.pools.asset_symbol}
+                  {prediction.status === "claimed" ? "Claimed" : "Placed"} prediction on {prediction.pools.name}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {new Date(prediction.created_at).toLocaleDateString("en-US", {
@@ -63,9 +62,9 @@ export default function RecentActivity() {
               </div>
               <div className="text-right">
                 <p className={`font-semibold ${getActivityColor(prediction.status)}`}>
-                  {prediction.status === "completed" && prediction.reward
-                    ? `+$${(prediction.reward - prediction.amount).toLocaleString()}`
-                    : `$${prediction.amount.toLocaleString()}`}
+                  {prediction.status === "claimed" && prediction.reward
+                    ? `+$${(prediction.reward - prediction.deposit).toLocaleString()}`
+                    : `$${prediction.deposit.toLocaleString()}`}
                 </p>
               </div>
             </div>
