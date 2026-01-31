@@ -8,9 +8,10 @@ import Link from "next/link"
 import { BarChart } from "lucide-react"
 import { useState } from "react"
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth"
-import { Connection, PublicKey } from "@solana/web3.js"
-// import { claimRewards } from "@/lib/solana/place-bet"
-import { claimReward } from "@/lib/api/predictions"
+import { useSignTransaction, useSignMessage } from "@privy-io/react-auth/solana"
+import { Connection, PublicKey, Transaction } from "@solana/web3.js"
+import { getAssociatedTokenAddress } from "@solana/spl-token"
+import { claimRewardFlow } from "@/lib/solana/claim-reward"
 import { useToast } from "@/lib/hooks/useToast"
 
 interface PredictionsTableProps {
@@ -26,6 +27,16 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
   const [claimingId, setClaimingId] = useState<string | null>(null)
 
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === "privy")
+  const { signTransaction } = useSignTransaction()
+  const { signMessage } = useSignMessage()
+
+  const wallet = {
+    publicKey: embeddedWallet ? new PublicKey(embeddedWallet.address) : null,
+    signTransaction: embeddedWallet?.signTransaction.bind(embeddedWallet),
+    signAllTransactions: async (txs: Transaction[]) => {
+      return Promise.all(txs.map(tx => embeddedWallet?.signTransaction(tx)))
+    },
+  }
 
   const getStatusBadge = (status: string) => {
     const styles = {
@@ -65,8 +76,53 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
   }
 
   const canClaimReward = (prediction: Prediction) => {
-    return true;
-    // return prediction.pools.status === "closed" && prediction.status === "resolved" 
+    return prediction.status === "calculated" && !prediction.reward
+  }
+
+  const handleClaimReward = async (prediction: Prediction) => {
+    if (!authenticated || !embeddedWallet) {
+      toast.error("Please connect your wallet first")
+      return
+    }
+
+    setClaimingId(prediction.id)
+
+    try {
+      toast.info("Processing claim on blockchain...")
+
+      const usdcMint = new PublicKey(process.env.NEXT_PUBLIC_USDC_TOKEN_MINT!)
+      const userTokenAccount = await getAssociatedTokenAddress(usdcMint, new PublicKey(embeddedWallet.address))
+
+      await claimRewardFlow({
+        userWallet: new PublicKey(embeddedWallet.address),
+        userTokenAccount,
+        poolId: prediction.pool_id,
+        poolPubkey: new PublicKey(prediction.pool_pubkey),
+        betPubkey: new PublicKey(prediction.bet_pubkey),
+        predictionId: prediction.id,
+        signTransaction: async (args: any) => {
+          const signed = await signTransaction(args)
+          return signed as Transaction
+        },
+        signMessage: signMessage,
+        wallet: wallet,
+      })
+
+      // Update Redux store
+      dispatch(
+        updatePrediction({
+          ...prediction,
+          status: "claimed",
+        }),
+      )
+
+      toast.success("Reward claimed successfully!")
+    } catch (error: any) {
+      console.error("Claim reward error:", error)
+      toast.error(error.message || "Failed to claim reward")
+    } finally {
+      setClaimingId(null)
+    }
   }
 
   // const handleClaimReward = async (prediction: Prediction) => {
@@ -209,7 +265,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                   <span className="text-sm text-muted-foreground">{formatDate(prediction.created_at)}</span>
                 </td>
                 <td className="py-3 px-4">
-                  {/* {canClaimReward(prediction) ? (
+                  {canClaimReward(prediction) ? (
                     <button
                       onClick={() => handleClaimReward(prediction)}
                       disabled={claimingId === prediction.id}
@@ -217,9 +273,11 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                     >
                       {claimingId === prediction.id ? "Claiming..." : "Claim"}
                     </button>
-                  ) : ( */}
+                  ) : prediction.status === "claimed" ? (
+                    <span className="text-xs font-semibold text-green-400">Claimed ✓</span>
+                  ) : (
                     <span className="text-xs text-muted-foreground">-</span>
-                  {/* // )} */}
+                  )}
                 </td>
               </motion.tr>
             ))}

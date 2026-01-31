@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth"
 import type { Pool, Prediction } from "@/lib/types/models"
 import { placeEncryptedBet } from "@/lib/solana/place-bet"
+import { claimRewardFlow } from "@/lib/solana/claim-reward"
 import { useToast } from "@/lib/hooks/useToast"
 import { useSignMessage, useSignTransaction } from '@privy-io/react-auth/solana';
 import { PublicKey, Transaction } from "@solana/web3.js"
@@ -37,10 +38,13 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   const [deposit, setDeposit] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [placedPrediction, setPlacedPrediction] = useState<Prediction | null>(null)
+  const [isClaiming, setIsClaiming] = useState(false)
+  const [userPrediction, setUserPrediction] = useState<Prediction | null>(null)
 
   const solanaWallet = wallets.find((w) => w.walletClientType === "privy")
   const isPoolActive = pool.status === "active"
   const isPoolEnded = new Date().getTime() / 1000 > pool.end_time
+  const isPoolResolved = pool.status === "resolved"
 
   // Use min/max prediction from pool data
   // These are set when pool is created in the backend
@@ -54,6 +58,43 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
 
   const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDeposit(e.target.value)
+  }
+
+  const handleClaimReward = async () => {
+    if (!ready || !authenticated || !solanaWallet || !userPrediction) {
+      toast.error("Please connect your wallet and select a prediction")
+      return
+    }
+
+    setIsClaiming(true)
+
+    try {
+      const usdcMint = new PublicKey(process.env.NEXT_PUBLIC_USDC_TOKEN_MINT!)
+      const userTokenAccount = await getAssociatedTokenAddress(usdcMint, new PublicKey(solanaWallet.address))
+
+      await claimRewardFlow({
+        userWallet: new PublicKey(solanaWallet.address),
+        userTokenAccount,
+        poolId: pool.pool_id,
+        poolPubkey: new PublicKey(pool.pool_pubkey),
+        betPubkey: new PublicKey(userPrediction.bet_pubkey!),
+        predictionId: userPrediction.id,
+        signTransaction: async (args: any) => {
+          const signed = await signTransaction(args)
+          return signed as Transaction
+        },
+        signMessage: signMessage,
+        wallet: wallet,
+      })
+
+      toast.success("Reward claimed successfully!")
+      setUserPrediction(null)
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message ?? "Claim failed")
+    } finally {
+      setIsClaiming(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,8 +167,35 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
         className="sticky top-4 p-6 rounded-2xl bg-card border border-border"
       >
         <div className="text-center py-8">
-          <p className="text-muted-foreground mb-2">Pool Closed</p>
-          <p className="text-sm text-muted-foreground">New predictions are no longer accepted</p>
+          {isPoolResolved ? (
+            <>
+              <p className="text-muted-foreground mb-2">Pool Resolved</p>
+              <p className="text-sm text-muted-foreground mb-4">Weights have been calculated. Claim your reward!</p>
+              <button
+                onClick={handleClaimReward}
+                disabled={isClaiming || !authenticated}
+                className="w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl transition-all hover:shadow-lg hover:shadow-green-500/20 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isClaiming ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.div
+                      className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                    />
+                    Claiming...
+                  </span>
+                ) : (
+                  "Claim Reward"
+                )}
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-muted-foreground mb-2">Pool Closed</p>
+              <p className="text-sm text-muted-foreground">New predictions are no longer accepted</p>
+            </>
+          )}
         </div>
       </motion.div>
     )
