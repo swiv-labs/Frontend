@@ -180,10 +180,10 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
               >
                 <td className="py-3 px-4">
                   <Link
-                    href={`/pools/${prediction.pool_id}`}
+                    href={`/pools/${prediction.pools.id}`}
                     className="font-semibold text-foreground hover:text-primary transition-smooth"
                   >
-                    {/* {prediction.pools.name} */}Bitcoin Price at 11:59 PM UTC on January 28, 2026
+                    {prediction.pools.name}
                   </Link>
                 </td>
                 <td className="py-3 px-4">
