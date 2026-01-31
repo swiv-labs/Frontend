@@ -215,7 +215,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Asset</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Title</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Target Price</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Final Price</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Stake</th>
