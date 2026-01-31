@@ -113,7 +113,7 @@ export function PoolStats({ pool }: PoolStatsProps) {
       </div>
 
       {/* Pool Status */}
-      {pool.is_resolved && (
+      {/* {pool.is_resolved && (
         <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
           <div className="text-xs md:text-sm text-green-600 mb-1">Status</div>
           <div className="text-sm md:text-base font-semibold text-green-600">Pool Resolved</div>
@@ -123,7 +123,7 @@ export function PoolStats({ pool }: PoolStatsProps) {
             </div>
           )}
         </div>
-      )}
+      )} */}
 
       {/* On-chain Info */}
       <div className="p-3 rounded-lg bg-muted/50 text-[10px] text-xs space-y-2">
