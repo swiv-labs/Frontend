@@ -13,14 +13,14 @@ import type { PoolStatus } from "@/lib/types/models"
 export default function PoolsPage() {
   const dispatch = useAppDispatch()
   const { pools, loading, error } = useAppSelector((state) => state.pools)
-  const [filter, setFilter] = useState<PoolStatus | "all">("all")
+  const [filter, setFilter] = useState<PoolStatus | "active">("active")
 
   useEffect(() => {
     const loadPools = async () => {
       dispatch(setLoading(true))
 
       try {
-        const status = filter === "all" ? undefined : (filter as PoolStatus)
+        const status = filter === "active" ? undefined : (filter as PoolStatus)
         const apiPools = await getAllPools(status)
         dispatch(setPools(apiPools))
       } catch (err) {

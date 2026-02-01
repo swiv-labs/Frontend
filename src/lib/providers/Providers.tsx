@@ -29,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         externalWallets: {
           solana: {connectors: toSolanaWalletConnectors()}
         },
-        loginMethods: ["email", "wallet", "google"],
+        loginMethods: ["email"],
         fundingMethodConfig: {
           moonpay: {
             useSandbox: true,

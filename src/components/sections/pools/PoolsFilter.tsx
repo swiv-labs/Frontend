@@ -3,22 +3,19 @@
 import type { PoolStatus } from "@/lib/types/models"
 
 interface PoolsFiltersProps {
-  currentFilter: PoolStatus | "all"
-  onFilterChange: (filter: PoolStatus | "all") => void
+  currentFilter: PoolStatus | "active"
+  onFilterChange: (filter: PoolStatus | "active") => void
 }
 
 const filters = [
-  { value: "all", label: "All Pools" },
+  // { value: "all", label: "All Pools" },
   { value: "active", label: "Active" },
   { value: "resolved", label: "Resolved" },
   { value: "settled", label: "Settled" },
   { value: "closed", label: "Closed" },
 ] as const
 
-/**
- * Pool status filters
- * Uses backend PoolStatus enum values: active | resolved | settled | closed
- */
+
 export function PoolsFilters({ currentFilter, onFilterChange }: PoolsFiltersProps) {
   return (
     <div className="mb-6">
