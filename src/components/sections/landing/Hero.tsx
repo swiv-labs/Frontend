@@ -36,7 +36,7 @@ export function HeroSection() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
             </span>
-            Predict Markets, Powered By Arcium
+            Predict Markets
           </motion.div> */}
 
           <div className="space-y-6">

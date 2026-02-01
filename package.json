@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@arcium-hq/client": "^0.4.0",
-    "@arcium-hq/reader": "^0.4.0",
     "@magicblock-labs/ephemeral-rollups-sdk": "^0.8.4",
     "@privy-io/react-auth": "^2.21.4",
     "@reduxjs/toolkit": "^2.9.0",
@@ -21,8 +19,8 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.22",
     "lucide-react": "^0.545.0",
-    "next": "15.5.4",
-    "react": "19.1.0",
+    "next": "^15.5.9",
+    "react": "19.2.1",
     "react-dom": "19.1.0",
     "react-redux": "^9.2.0",
     "recharts": "^3.2.1",
