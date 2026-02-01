@@ -50,7 +50,7 @@ export function PoolStats({ pool }: PoolStatsProps) {
     {
       label: "Vault Balance",
       value: `${(pool.vault_balance / 1_000_000).toFixed(2)}`,
-      unit: "tokens",
+      unit: "USDC",
     },
     {
       label: "Total Participants",
