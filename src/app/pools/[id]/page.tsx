@@ -11,6 +11,7 @@ import { fetchHistoricalPrices } from "@/lib/api/coingecko"
 import { getPoolById } from "@/lib/api/pools"
 import { useAppDispatch } from "@/lib/store/hooks"
 import { setCurrentPool } from "@/lib/store/slices/poolsSlice"
+import { extractCryptoSymbol } from "@/lib/helpers/extractCryptoSymbol"
 import Link from "next/link"
 import type { Pool } from "@/lib/types/models"
 import { InlineBettingPanel } from "@/components/sections/pools-details/InlineBettingPanel"
@@ -30,9 +31,15 @@ export default function PoolDetailsPage() {
         setPool(poolData)
         dispatch(setCurrentPool(poolData))
 
-        // Fetch historical price data if available
-        // Note: Update this to use actual token data once we have price feeds integrated
-        // For now, we'll skip historical data
+        // Extract crypto symbol from pool name and fetch historical prices
+        const coinId = extractCryptoSymbol(poolData.name)
+        if (coinId) {
+          console.log(`[pools-details] Found crypto symbol: ${coinId} from pool name: ${poolData.name}`)
+          const priceData = await fetchHistoricalPrices(coinId, 30)
+          setHistoricalData(priceData)
+        } else {
+          console.log(`[pools-details] Could not extract crypto symbol from pool name: ${poolData.name}`)
+        }
       } catch (err) {
         console.error("[pools-details] Error loading pool:", err)
         setError("Failed to load pool details")

@@ -1,17 +1,7 @@
-/**
- * Pools API integration
- * Directly aligned with backend Pool schema and contract
- * No transformation or legacy code
- */
-
 import type { Pool, PoolStatus, ApiResponse, ApiListResponse } from "@/lib/types/models"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"
 
-/**
- * Fetch all pools from backend
- * Backend returns pools with exact schema matching contract
- */
 export const getAllPools = async (status?: PoolStatus): Promise<Pool[]> => {
   try {
     const url = status ? `${API_BASE_URL}/api/pools?status=${status}` : `${API_BASE_URL}/api/pools`
@@ -35,10 +25,6 @@ export const getAllPools = async (status?: PoolStatus): Promise<Pool[]> => {
   }
 }
 
-/**
- * Fetch a single pool by ID
- * Backend returns full pool data with all on-chain properties
- */
 export const getPoolById = async (poolId: string): Promise<Pool> => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/pools/${poolId}`, {
@@ -60,9 +46,6 @@ export const getPoolById = async (poolId: string): Promise<Pool> => {
   }
 }
 
-/**
- * Fetch pools by wallet (user's created pools)
- */
 export const getPoolsByAdmin = async (adminWallet: string): Promise<Pool[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/pools?admin=${adminWallet}`, {
@@ -84,16 +67,10 @@ export const getPoolsByAdmin = async (adminWallet: string): Promise<Pool[]> => {
   }
 }
 
-/**
- * Fetch pools by status
- */
 export const getPoolsByStatus = async (status: PoolStatus): Promise<Pool[]> => {
   return getAllPools(status)
 }
-/**
- * Finalize pool weights (after resolution)
- * Backend calls finalize_weights instruction and persists finalized state
- */
+
 export const finalizePoolWeights = async (poolId: string): Promise<Pool> => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/pools/${poolId}/finalize`, {

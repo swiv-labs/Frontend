@@ -1,28 +1,14 @@
-/**
- * Predictions/Bets API integration
- * Directly aligned with backend Prediction model
- * 
- * This API layer is called AFTER on-chain transactions are complete:
- * 1. Frontend: Create UserBet account via init_bet (L1)
- * 2. Frontend: Delegate to TEE via place_bet (Ephemeral RPC)
- * 3. Frontend: Call this API to persist metadata in database
- */
-
 import type { Prediction, UserStats, ApiResponse, ApiListResponse } from "@/lib/types/models"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"
 
-/**
- * Place a new prediction/bet on a pool
- * Matches backend PredictionsController.placeBet signature
- */
 export interface PlacePredictionRequest {
   poolId: string
   userWallet: string
-  deposit: number // Amount in lamports/token units
-  prediction?: number // Predicted value, can be encrypted on TEE
-  requestId?: string // Unique request ID for bet PDA seed
-  bet_pubkey?: string // On-chain bet account pubkey after init_bet
+  deposit: number 
+  prediction?: number 
+  requestId?: string 
+  bet_pubkey?: string
 }
 
 export const placePrediction = async (
@@ -50,10 +36,6 @@ export const placePrediction = async (
   }
 }
 
-/**
- * Get user's predictions with stats
- * Matches backend PredictionsController.getUserBets signature
- */
 export interface UserPredictionsApiResponse {
   data: {
     stats: UserStats
@@ -68,7 +50,7 @@ export interface UserPredictionsResponse {
 
 export const fetchUserPredictions = async (
   walletAddress: string,
-): Promise<UserPredictionsApiResponse> => {
+  ): Promise<UserPredictionsResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/predictions/${walletAddress}`, {
       method: "GET",
@@ -82,7 +64,7 @@ export const fetchUserPredictions = async (
       throw new Error(error.message || "Failed to fetch predictions")
     }
 
-    const result: ApiResponse<UserPredictionsApiResponse> = await response.json()
+    const result: UserPredictionsApiResponse = await response.json()
     console.log("Fetched user predictions:", result.data)
     return result.data
   } catch (error) {
@@ -91,10 +73,6 @@ export const fetchUserPredictions = async (
   }
 }
 
-/**
- * Get all predictions for a specific pool
- * Matches backend PredictionsController.getPoolBets signature
- */
 export const fetchPoolPredictions = async (poolId: string): Promise<Prediction[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/predictions/pool/${poolId}`, {
@@ -117,10 +95,6 @@ export const fetchPoolPredictions = async (poolId: string): Promise<Prediction[]
   }
 }
 
-/**
- * Claim reward for a prediction
- * Matches backend PredictionsController.claimReward signature
- */
 export const claimReward = async (
   predictionId: string,
 ): Promise<Prediction> => {
@@ -148,10 +122,6 @@ export const claimReward = async (
   }
 }
 
-/**
- * Persist claim record in backend after on-chain claim_reward tx is confirmed
- * Backend only persists DB data; all signing and broadcasting happens in frontend
- */
 export interface ClaimRewardDBRequest {
   predictionId: string
   userWallet: string
@@ -191,10 +161,6 @@ export const claimRewardDB = async (
   }
 }
 
-/**
- * Update a prediction (e.g., change prediction value before pool starts)
- * Matches backend PredictionsController.updateBetPrediction signature
- */
 export interface UpdatePredictionRequest {
   prediction: number
 }

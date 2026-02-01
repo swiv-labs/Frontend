@@ -110,11 +110,11 @@ export function ActivePoolsSection() {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4">
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 text-3xl shadow-lg">
-                      {pool.icon}
+                      {/* {pool.icon} */}
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg text-foreground">{pool.asset}</h3>
-                      <p className="text-sm text-muted-foreground font-medium">{pool.symbol}</p>
+                      {/* <h3 className="font-bold text-lg text-foreground">{pool.asset}</h3> */}
+                      {/* <p className="text-sm text-muted-foreground font-medium">{pool.symbol}</p> */}
                     </div>
                   </div>
                   <div className="px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/30 text-xs font-bold text-green-500 dark:text-green-400 shadow-lg shadow-green-500/10">
@@ -126,15 +126,15 @@ export function ActivePoolsSection() {
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center justify-between p-3 rounded-xl border border-border">
                     <span className="text-sm text-muted-foreground font-medium">Pool Size</span>
-                    <span className="text-sm font-bold text-foreground">${pool.poolSize.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-foreground">${pool.vault_balance.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-xl border border-border">
                     <span className="text-sm text-muted-foreground font-medium">Participants</span>
-                    <span className="text-sm font-bold text-foreground">{pool.participants}</span>
+                    <span className="text-sm font-bold text-foreground">{pool.total_participants}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-xl border border-border">
                     <span className="text-sm text-muted-foreground font-medium">Deadline</span>
-                    <span className="text-sm font-bold text-primary">{formatDeadline(pool.deadline)}</span>
+                    {/* <span className="text-sm font-bold text-primary">{formatDeadline(pool.end_time)}</span> */}
                   </div>
                 </div>
 

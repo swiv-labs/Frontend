@@ -7,6 +7,7 @@ import { useState } from "react"
 import { updateProfile } from "@/lib/store/slices/walletSlice"
 import { authApi } from "@/lib/api/auth"
 import { useToast } from "@/lib/hooks/useToast"
+import Image from "next/image"
 
 export default function ProfileHeader() {
   const { user } = usePrivy()
@@ -24,7 +25,7 @@ export default function ProfileHeader() {
   const shortAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : ""
 
   // Calculate total rewards
-  const totalRewards = predictions.filter((p) => p.status === "completed").reduce((sum, p) => sum + (p.reward || 0), 0)
+  const totalRewards = predictions.filter((p) => p.status === "claimed").reduce((sum, p) => sum + (p.reward || 0), 0)
 
   const handleSaveProfile = async () => {
     if (!walletAddress) return
@@ -64,10 +65,12 @@ export default function ProfileHeader() {
           {/* Avatar */}
           <div className="relative">
             {wallet.avatarUrl ? (
-              <img
+              <Image
                 src={wallet.avatarUrl || "/placeholder.svg"}
                 alt="Profile"
                 className="w-20 h-20 rounded-full object-cover border-2 border-violet-500"
+                width={100}
+                height={100}
               />
             ) : (
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">

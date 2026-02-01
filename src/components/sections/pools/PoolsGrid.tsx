@@ -71,7 +71,7 @@ export function PoolsGrid({ pools }: PoolsGridProps) {
               {/* Pool Info */}
               <div className="flex gap-2 w-full">
                 <div className="w-2/5">
-                  <Image className="w-full h-full object-cover rounded-lg" src={pool.metadata ? pool.metadata : "https://bernardmarr.com/wp-content/uploads/2025/01/bitcoin.jpg"} alt={"pool image"} width={200} height={200} />
+                  <Image className="w-[256px] h-[130px] object-cover rounded-lg" src={pool.metadata ? pool.metadata : "https://bernardmarr.com/wp-content/uploads/2025/01/bitcoin.jpg"} alt={"pool image"} width={200} height={200} />
                 </div>
                 <div className="w-3/5 flex flex-col space-y-2">
                   {/* Name */}

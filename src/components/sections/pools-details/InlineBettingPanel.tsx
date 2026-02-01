@@ -39,7 +39,6 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [placedPrediction, setPlacedPrediction] = useState<Prediction | null>(null)
   const [isClaiming, setIsClaiming] = useState(false)
-  const [userPrediction, setUserPrediction] = useState<Prediction | null>(null)
 
   const solanaWallet = wallets.find((w) => w.walletClientType === "privy")
   const isPoolActive = pool.status === "active"
@@ -50,7 +49,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   // These are set when pool is created in the backend
   const MIN_PREDICTION = pool.min_prediction || 0
   const MAX_PREDICTION = pool.max_prediction || 1000
-  const STEP = (MAX_PREDICTION - MIN_PREDICTION) / 10000000
+  const STEP = (MAX_PREDICTION - MIN_PREDICTION) / 100000
 
   const handlePredictionChange = (value: number) => {
     setPrediction(value)
@@ -61,9 +60,8 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   }
 
   const handleClaimReward = async () => {
-    console.log("Claiming reward for prediction:", ready, authenticated, solanaWallet, userPrediction)
-    if (!ready || !authenticated || !solanaWallet || !userPrediction) {
-      toast.error("Please connect your wallet and select a prediction")
+    if (!ready || !authenticated || !solanaWallet || !placedPrediction) {
+      toast.error("Please connect your wallet and place a prediction first")
       return
     }
 
@@ -78,8 +76,8 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
         userTokenAccount,
         poolId: pool.pool_id,
         poolPubkey: new PublicKey(pool.pool_pubkey),
-        betPubkey: new PublicKey(userPrediction.bet_pubkey!),
-        predictionId: userPrediction.id,
+        betPubkey: new PublicKey(placedPrediction.bet_pubkey!),
+        predictionId: placedPrediction.id,
         signTransaction: async (args: any) => {
           const signed = await signTransaction(args)
           return signed as Transaction
@@ -89,7 +87,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
       })
 
       toast.success("Reward claimed successfully!")
-      setUserPrediction(null)
+      setPlacedPrediction(null)
     } catch (err: any) {
       console.error(err)
       toast.error(err.message ?? "Claim failed")
@@ -206,11 +204,11 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="sticky top-4 p-6 rounded-2xl bg-card border border-border shadow-xl space-y-6"
+      className="sticky top-4 p-6 rounded-2xl bg-card/20 border border-border shadow-xl space-y-6"
     >
       <div>
-        <h3 className="text-xl font-bold text-foreground">Place Prediction</h3>
-        <p className="text-sm text-muted-foreground mt-1">Pool {pool.pool_id}</p>
+        <h3 className="text-base md:text-lg font-bold text-foreground">Place Prediction</h3>
+        <p className="text-xs md:text-sm text-muted-foreground mt-1">Pool {pool.pool_id}</p>
       </div>
 
       {placedPrediction ? (
@@ -233,8 +231,8 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
           {/* Prediction Slider */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-foreground">Predicted Value</label>
-              <div className="text-lg font-bold text-primary font-mono">{prediction.toFixed(2)}</div>
+              <label className="text-xs md:text-sm font-medium text-foreground">Predicted Value</label>
+              <div className="text-base md:text-lg font-bold text-primary font-mono">{prediction.toFixed(2)}</div>
             </div>
 
             <input
@@ -256,7 +254,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
 
           {/* Deposit Amount */}
           <div>
-            <label htmlFor="deposit" className="block text-sm font-medium text-foreground mb-2">
+            <label htmlFor="deposit" className="block text-xs md:text-sm font-medium text-foreground mb-2">
               Deposit Amount (USDC)
             </label>
             <input
@@ -268,7 +266,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
               onChange={handleDepositChange}
               placeholder="100"
               disabled={isSubmitting || !authenticated}
-              className="w-full px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-smooth disabled:opacity-50"
+              className="w-full px-4 py-3 rounded-xl bg-muted/10 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-smooth disabled:opacity-50"
             />
           </div>
 
@@ -283,7 +281,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
           <button
             type="submit"
             disabled={isSubmitting || !authenticated || !solanaWallet}
-            className="w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary to-accent rounded-xl transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 text-xs md:text-sm font-semibold text-white bg-gradient-to-r from-primary to-accent rounded-xl transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">
@@ -305,15 +303,15 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
 
       {/* Pool Stats */}
       <div className="space-y-2 pt-4 border-t border-border">
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-xs md:text-sm">
           <span className="text-muted-foreground">Participants</span>
           <span className="font-semibold">{pool.total_participants}</span>
         </div>
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-xs md:text-sm">
           <span className="text-muted-foreground">Vault Balance</span>
           <span className="font-mono text-xs font-semibold">{(pool.vault_balance / 1_000_000).toFixed(2)}</span>
         </div>
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-xs md:text-sm">
           <span className="text-muted-foreground">Status</span>
           <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-primary/20 text-primary capitalize">
             {pool.status}
