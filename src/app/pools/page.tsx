@@ -20,7 +20,7 @@ export default function PoolsPage() {
       dispatch(setLoading(true))
 
       try {
-        const status = filter === "active" ? undefined : (filter as PoolStatus)
+        const status = (filter as PoolStatus)
         const apiPools = await getAllPools(status)
         dispatch(setPools(apiPools))
       } catch (err) {
