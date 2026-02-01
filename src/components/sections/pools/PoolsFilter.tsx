@@ -9,10 +9,10 @@ interface PoolsFiltersProps {
 
 const filters = [
   // { value: "all", label: "All Pools" },
-  { value: "active", label: "Active" },
+  { value: "active", label: "Live" },
+  { value: "closed", label: "Ended" },
   { value: "resolved", label: "Resolved" },
   { value: "settled", label: "Settled" },
-  { value: "closed", label: "Closed" },
 ] as const
 
 

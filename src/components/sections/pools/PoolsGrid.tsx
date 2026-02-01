@@ -12,13 +12,13 @@ interface PoolsGridProps {
 const getStatusColor = (status: Pool["status"]) => {
   switch (status) {
     case "active":
-      return { bg: "bg-green-500/10", text: "text-green-600", label: "Active" }
+      return { bg: "bg-green-500/10", text: "text-green-600", label: "Live" }
     case "resolved":
       return { bg: "bg-blue-500/10", text: "text-blue-600", label: "Resolved" }
     case "settled":
       return { bg: "bg-purple-500/10", text: "text-purple-600", label: "Settled" }
     case "closed":
-      return { bg: "bg-gray-500/10", text: "text-gray-600", label: "Closed" }
+      return { bg: "bg-gray-500/10", text: "text-gray-600", label: "Ended" }
     default:
       return { bg: "bg-muted", text: "text-muted-foreground", label: status }
   }
