@@ -217,7 +217,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
             <tr className="border-b border-border">
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Title</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Target Price</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Final Price</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Pool Outcome</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Stake</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">PnL</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Status</th>
@@ -249,7 +249,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                 </td>
                 <td className="py-3 px-4">
                   <span className="font-mono text-sm text-foreground">
-                    {/* {prediction.pools.final_price ? `$${prediction.pools.final_price.toLocaleString()}` : "-"} */} $50,000
+                    {prediction.pools.resolution_target ? `$${prediction.pools.resolution_target.toLocaleString()}` : "-"}
                   </span>
                 </td>
                 <td className="py-3 px-4">
