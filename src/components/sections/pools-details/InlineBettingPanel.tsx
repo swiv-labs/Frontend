@@ -309,7 +309,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
         </div>
         <div className="flex items-center justify-between text-xs md:text-sm">
           <span className="text-muted-foreground">Vault Balance</span>
-          <span className="font-mono text-xs font-semibold">{(pool.vault_balance / 1_000_000).toFixed(2)}</span>
+          <span className="font-mono text-xs font-semibold">${(pool.vault_balance / 1_000_000).toFixed(2)}</span>
         </div>
         <div className="flex items-center justify-between text-xs md:text-sm">
           <span className="text-muted-foreground">Status</span>

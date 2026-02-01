@@ -219,7 +219,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Target Price</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Final Price</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Stake</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Reward</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">PnL</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Status</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Date</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Action</th>
@@ -253,7 +253,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <span className="text-sm text-foreground">${prediction.deposit.toLocaleString()}</span>
+                  <span className="text-sm text-foreground">${(prediction.deposit / 1_000_000).toFixed(2)}</span>
                 </td>
                 <td className="py-3 px-4">
                   <span className="text-sm font-semibold text-green-400">

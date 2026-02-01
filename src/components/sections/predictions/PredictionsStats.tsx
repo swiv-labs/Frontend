@@ -24,13 +24,13 @@ export function PredictionsStats({ predictions, stats }: PredictionsStatsProps) 
       color: "text-blue-400",
     },
     {
-      label: "Total Staked",
+      label: "Total Volume",
       value: `$${stats.totalStaked.toLocaleString()}`,
       icon: <PiggyBank size={30} />,
       color: "text-green-400",
     },
     {
-      label: "Total Rewards",
+      label: "PnL",
       value: `$${stats.totalRewards.toLocaleString()}`,
       icon: <Trophy size={30} />,
       color: "text-yellow-400",
