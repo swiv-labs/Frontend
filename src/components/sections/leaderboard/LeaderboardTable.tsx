@@ -1,9 +1,9 @@
 "use client"
 
 import { motion } from "framer-motion"
-import type { LeaderboardEntry } from "@/lib/data/mockData"
 import { Confetti } from "./Confetti"
 import { useAppSelector } from "@/lib/store/hooks"
+import { LeaderboardEntry } from "@/lib/types/models"
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[]
@@ -82,20 +82,20 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
               <div className="flex flex-col items-center text-center">
                 {getRankBadge(entry.rank)}
                 <div className="mt-4 mb-2">
-                  <div className="font-mono text-lg font-bold text-foreground">{entry.address}</div>
+                  <div className="font-mono text-lg font-bold text-foreground">{entry.user_wallet}</div>
                 </div>
-                <div className={`text-3xl font-bold mb-1 ${getAccuracyColor(entry.accuracy)}`}>
-                  {entry.accuracy.toFixed(1)}%
+                <div className={`text-3xl font-bold mb-1 ${getAccuracyColor(entry.win_rate)}`}>
+                  {entry.win_rate.toFixed(1)}%
                 </div>
                 <div className="text-sm text-muted-foreground mb-4">Accuracy</div>
                 <div className="w-full space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Predictions</span>
-                    <span className="font-semibold text-foreground">{entry.totalPredictions}</span>
+                    <span className="font-semibold text-foreground">{entry.active_predictions}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Rewards</span>
-                    <span className="font-semibold text-green-400">${entry.totalRewards.toLocaleString()}</span>
+                    <span className="font-semibold text-green-400">${entry.total_earnings.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -135,7 +135,7 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.05 }}
                   className={`border-b border-border/50 transition-smooth ${
-                    isCurrentUser(entry.address) ? "bg-primary/10 hover:bg-primary/20" : "hover:bg-muted/30"
+                    isCurrentUser(entry.user_wallet) ? "bg-primary/10 hover:bg-primary/20" : "hover:bg-muted/30"
                   }`}
                 >
                   <td className="py-3 px-4">
@@ -151,8 +151,8 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-semibold text-foreground">{entry.address}</span>
-                      {isCurrentUser(entry.address) && (
+                      <span className="font-mono text-sm font-semibold text-foreground">{entry.user_wallet}</span>
+                      {isCurrentUser(entry.user_wallet) && (
                         <span className="px-2 py-0.5 rounded-md bg-primary/20 border border-primary/30 text-xs font-medium text-primary">
                           You
                         </span>
@@ -160,15 +160,15 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`text-sm font-bold ${getAccuracyColor(entry.accuracy)}`}>
-                      {entry.accuracy.toFixed(1)}%
+                    <span className={`text-sm font-bold ${getAccuracyColor(entry.win_rate)}`}>
+                      {entry.win_rate.toFixed(1)}%
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-foreground">{entry.totalPredictions}</span>
+                    <span className="text-sm text-foreground">{entry.active_predictions}</span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm font-semibold text-green-400">${entry.totalRewards.toLocaleString()}</span>
+                    <span className="text-sm font-semibold text-green-400">${entry.total_earnings.toLocaleString()}</span>
                   </td>
                 </motion.tr>
               ))}

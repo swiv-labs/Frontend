@@ -1,6 +1,8 @@
 // import type { Pool } from "../store/slices/poolsSlice"
 // import type { Prediction } from "../store/slices/predictionsSlice"
 
+import { LeaderboardEntry } from "../types/models";
+
 // export const mockPools: Pool[] = [
 //   {
 //     id: "1",
@@ -95,61 +97,14 @@
 //   totalRewards: number
 // }
 
-// export const mockLeaderboard: LeaderboardEntry[] = [
-//   {
-//     rank: 1,
-//     address: "0x742d...3f8a",
-//     accuracy: 96.8,
-//     totalPredictions: 45,
-//     totalRewards: 125000,
-//   },
-//   {
-//     rank: 2,
-//     address: "0x9a3c...7b2e",
-//     accuracy: 95.2,
-//     totalPredictions: 38,
-//     totalRewards: 98000,
-//   },
-//   {
-//     rank: 3,
-//     address: "0x1f5d...4c9b",
-//     accuracy: 94.7,
-//     totalPredictions: 52,
-//     totalRewards: 112000,
-//   },
-//   {
-//     rank: 4,
-//     address: "0x8e2a...6d1f",
-//     accuracy: 93.5,
-//     totalPredictions: 41,
-//     totalRewards: 87000,
-//   },
-//   {
-//     rank: 5,
-//     address: "0x3b7f...9e4c",
-//     accuracy: 92.8,
-//     totalPredictions: 36,
-//     totalRewards: 76000,
-//   },
-//   {
-//     rank: 6,
-//     address: "0x6c4e...2a8d",
-//     accuracy: 91.9,
-//     totalPredictions: 29,
-//     totalRewards: 65000,
-//   },
-//   {
-//     rank: 7,
-//     address: "0x5d9b...1f3e",
-//     accuracy: 90.5,
-//     totalPredictions: 33,
-//     totalRewards: 58000,
-//   },
-//   {
-//     rank: 8,
-//     address: "0x2e8c...7b5a",
-//     accuracy: 89.7,
-//     totalPredictions: 27,
-//     totalRewards: 52000,
-//   },
-// ]
+export const mockLeaderboard: LeaderboardEntry[] = [
+  {
+    rank: 1,
+    user_wallet: "0x742d...3f8a",
+    win_rate: 96.8,
+    active_predictions: 45,
+    total_earnings: 125000,
+    id: "1",
+    updated_at: "1"
+  },
+]

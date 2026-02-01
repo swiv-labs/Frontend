@@ -1,7 +1,6 @@
 "use client"
 
 import { PageLayout } from "@/components/layout/PageLayout"
-import { LeaderboardHeader } from "@/components/sections/leaderboard/LeaderboardHeader"
 import { LeaderboardTable } from "@/components/sections/leaderboard/LeaderboardTable"
 import { mockLeaderboard } from "@/lib/data/mockData"
 
