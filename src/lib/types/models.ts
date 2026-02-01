@@ -46,7 +46,7 @@ export interface Prediction {
   created_at?: string
   updated_at?: string
   last_synced_at?: string 
-  pools: Pool[]
+  pools: Pool
 }
 
 export interface User {

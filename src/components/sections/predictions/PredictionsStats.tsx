@@ -1,7 +1,7 @@
 "use client"
 
+import { Prediction } from "@/lib/types/models"
 import { motion } from "framer-motion"
-import type { Prediction } from "@/lib/store/slices/predictionsSlice"
 import { Lock, PiggyBank, Trophy, TrendingUp } from "lucide-react"
 
 interface PredictionsStatsProps {

@@ -9,7 +9,7 @@ export default function ActivePositions() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
   const pools = useAppSelector((state) => state.pools.pools)
 
-  const activePredictions = predictions.filter((p) => p.status === "pending" || p.status === "resolved")
+  const activePredictions = predictions.filter((p) => p.status === "active" || p.status === "calculated")
 
   return (
     <motion.div
@@ -31,7 +31,7 @@ export default function ActivePositions() {
       {activePredictions.length > 0 ? (
         <div className="space-y-4">
           {activePredictions.slice(0, 5).map((prediction) => {
-            const pool = pools.find((p) => p.id === prediction.pool_id)
+            const pool = pools.find((p) => p.id === prediction.id)
             return (
               <div
                 key={prediction.id}
@@ -42,7 +42,7 @@ export default function ActivePositions() {
                     {pool?.icon || "₿"}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">{prediction.pools.asset_symbol}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white line-clamp-1">{prediction.pools.name}</p>
                     {/* <p className="text-sm text-gray-600 dark:text-gray-400">
                       Predicted: ${prediction.predictedPrice.toLocaleString()}
                     </p> */}

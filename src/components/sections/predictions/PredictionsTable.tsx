@@ -1,7 +1,6 @@
 "use client"
 
 import { motion } from "framer-motion"
-import type { Prediction } from "@/lib/store/slices/predictionsSlice"
 import { useAppDispatch } from "@/lib/store/hooks"
 import { updatePrediction } from "@/lib/store/slices/predictionsSlice"
 import Link from "next/link"
@@ -13,6 +12,7 @@ import { Connection, PublicKey, Transaction } from "@solana/web3.js"
 import { getAssociatedTokenAddress } from "@solana/spl-token"
 import { claimRewardFlow } from "@/lib/solana/claim-reward"
 import { useToast } from "@/lib/hooks/useToast"
+import { Prediction } from "@/lib/types/models"
 
 interface PredictionsTableProps {
   predictions: Prediction[]
@@ -98,7 +98,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
         userTokenAccount,
         poolId: prediction.pool_id,
         poolPubkey: new PublicKey(prediction.pool_pubkey),
-        betPubkey: new PublicKey(prediction.bet_pubkey),
+        betPubkey: new PublicKey(prediction.bet_pubkey!),
         predictionId: prediction.id,
         signTransaction: async (args: any) => {
           const signed = await signTransaction(args)
@@ -262,7 +262,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                 </td>
                 <td className="py-3 px-4">{getStatusBadge(prediction.status)}</td>
                 <td className="py-3 px-4">
-                  <span className="text-sm text-muted-foreground">{formatDate(prediction.created_at)}</span>
+                  <span className="text-sm text-muted-foreground">{formatDate(prediction.created_at!)}</span>
                 </td>
                 <td className="py-3 px-4">
                   {canClaimReward(prediction) ? (
