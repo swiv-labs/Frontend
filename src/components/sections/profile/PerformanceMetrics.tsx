@@ -6,14 +6,14 @@ import { useAppSelector } from "@/lib/store/hooks"
 export default function PerformanceMetrics() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
 
-  const completedPredictions = predictions.filter((p) => p.status === "completed")
-  const activePredictions = predictions.filter((p) => p.status === "pending" || p.status === "resolved")
+  const completedPredictions = predictions.filter((p) => p.status === "claimed")
+  const activePredictions = predictions.filter((p) => p.status === "active" || p.status === "calculated")
 
   // Calculate metrics
   const totalPredictions = predictions.length
   const winRate =
     completedPredictions.length > 0
-      ? (completedPredictions.filter((p) => (p.reward || 0) > p.amount).length / completedPredictions.length) * 100
+      ? (completedPredictions.filter((p) => (p.reward || 0) > p.deposit).length / completedPredictions.length) * 100
       : 0
 
   const avgAccuracy =
@@ -24,7 +24,7 @@ export default function PerformanceMetrics() {
   const bestAccuracy =
     completedPredictions.length > 0 ? Math.max(...completedPredictions.map((p) => 0 || 0)) : 0
 
-  const totalStaked = predictions.reduce((sum, p) => sum + p.amount, 0)
+  const totalStaked = predictions.reduce((sum, p) => sum + p.deposit, 0)
   const totalRewards = completedPredictions.reduce((sum, p) => sum + (p.reward || 0), 0)
   const roi = totalStaked > 0 ? ((totalRewards - totalStaked) / totalStaked) * 100 : 0
 

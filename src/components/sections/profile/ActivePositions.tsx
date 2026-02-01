@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { useAppSelector } from "@/lib/store/hooks"
 import Link from "next/link"
 import { ChartArea } from "lucide-react"
+import Image from "next/image"
 
 export default function ActivePositions() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
@@ -39,7 +40,7 @@ export default function ActivePositions() {
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-lg">
-                    {pool?.icon || "₿"}
+                    <Image className="w-full h-full object-cover rounded-lg" src={prediction.pools.metadata ? prediction.pools.metadata : "https://bernardmarr.com/wp-content/uploads/2025/01/bitcoin.jpg"} alt={"pool image"} width={200} height={200} />
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900 dark:text-white line-clamp-1">{prediction.pools.name}</p>
@@ -49,7 +50,7 @@ export default function ActivePositions() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900 dark:text-white">${prediction.amount.toLocaleString()}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">${prediction.deposit.toLocaleString()}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Staked</p>
                 </div>
               </div>
@@ -58,7 +59,7 @@ export default function ActivePositions() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4 w-full justify-center flex"><ChartArea/></div>
+          <div className="text-6xl mb-4 w-full justify-center flex"><ChartArea /></div>
           <p className="text-gray-600 dark:text-gray-400 mb-4">No active positions</p>
           <Link
             href="/pools"

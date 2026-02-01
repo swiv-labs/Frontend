@@ -7,7 +7,7 @@ export default function RecentActivity() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
 
   const recentPredictions = [...predictions]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime())
     .slice(0, 10)
 
   const getActivityIcon = (status: string) => {
@@ -51,7 +51,7 @@ export default function RecentActivity() {
                   {prediction.status === "claimed" ? "Claimed" : "Placed"} prediction on {prediction.pools.name}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {new Date(prediction.created_at).toLocaleDateString("en-US", {
+                  {new Date(prediction.created_at!).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
