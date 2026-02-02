@@ -257,7 +257,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                 </td>
                 <td className="py-3 px-4">
                   <span className="text-sm font-semibold text-green-400">
-                    {prediction.reward ? `$${prediction.reward.toLocaleString()}` : "-"}
+                    {prediction.reward ? `+$${prediction.reward.toLocaleString()}` : "-"}
                   </span>
                 </td>
                 <td className="py-3 px-4">{getStatusBadge(prediction.status)}</td>

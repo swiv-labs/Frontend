@@ -185,7 +185,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
                     Claiming...
                   </span>
                 ) : (
-                  "Claim Reward"
+                  "Claim"
                 )}
               </button>
             </>

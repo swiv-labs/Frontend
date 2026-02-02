@@ -31,13 +31,13 @@ export function PredictionsStats({ predictions, stats }: PredictionsStatsProps) 
     },
     {
       label: "PnL",
-      value: `$${stats.totalRewards.toLocaleString()}`,
+      value: `+$780.89`,
       icon: <Trophy size={30} />,
       color: "text-yellow-400",
     },
     {
       label: "Avg. Accuracy",
-      value: `${stats.totalClaimed.toFixed(1)}%`,
+      value: `$78.90%`,
       icon: <TrendingUp size={30} />,
       color: "text-primary",
     },
