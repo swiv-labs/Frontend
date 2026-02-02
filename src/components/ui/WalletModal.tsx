@@ -1,9 +1,12 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { usePrivy } from "@privy-io/react-auth"
+import { usePrivy, useFundWallet } from "@privy-io/react-auth"
+import { useSolanaWallets } from "@privy-io/react-auth"
 import { useAppSelector } from "@/lib/store/hooks"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { getUsdcBalanceFormatted } from "@/lib/solana/token"
+import { useToast } from "@/lib/hooks/useToast"
 
 interface WalletModalProps {
   isOpen: boolean
@@ -11,11 +14,44 @@ interface WalletModalProps {
 }
 
 export function WalletModal({ isOpen, onClose }: WalletModalProps) {
-  const { user, exportWallet, logout } = usePrivy()
-  const { balance } = useAppSelector((state) => state.wallet)
+  const { user, logout, ready, authenticated } = usePrivy()
+  const { fundWallet } = useFundWallet()
+  const { wallets } = useSolanaWallets()
+  const { balance: reduxBalance } = useAppSelector((state) => state.wallet)
   const [copying, setCopying] = useState(false)
+  const [usdcBalance, setUsdcBalance] = useState<number>(0)
+  const [loadingBalance, setLoadingBalance] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [depositing, setDepositing] = useState(false)
+  const toast = useToast()
 
   const walletAddress = user?.wallet?.address || ""
+
+  // Get the embedded Solana wallet
+  const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === "privy")
+  const hasEmbeddedWallet = !!embeddedWallet
+
+  // Fetch real USDC balance
+  const fetchUsdcBalance = async () => {
+    if (!walletAddress) return
+    setLoadingBalance(true)
+    try {
+      const balance = await getUsdcBalanceFormatted(walletAddress)
+      setUsdcBalance(balance)
+    } catch (error) {
+      console.error("Failed to fetch USDC balance:", error)
+      toast.error("Failed to fetch balance")
+    } finally {
+      setLoadingBalance(false)
+    }
+  }
+
+  // Fetch balance when modal opens or wallet address changes
+  useEffect(() => {
+    if (isOpen && walletAddress) {
+      fetchUsdcBalance()
+    }
+  }, [isOpen, walletAddress])
 
   const copyAddress = async () => {
     await navigator.clipboard.writeText(walletAddress)
@@ -23,11 +59,53 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     setTimeout(() => setCopying(false), 2000)
   }
 
-  const handleExportWallet = async () => {
+  const handleDepositUsdc = async () => {
+    if (!walletAddress) {
+      toast.error("Wallet not connected")
+      return
+    }
+
+    setDepositing(true)
     try {
-      await exportWallet()
+      // fundWallet takes just the address
+      await fundWallet(walletAddress)
+      toast.success("Deposit initiated")
+      // Refresh balance after deposit
+      setTimeout(() => fetchUsdcBalance(), 2000)
+    } catch (error) {
+      console.error("Failed to deposit USDC:", error)
+      toast.error("Failed to initiate deposit")
+    } finally {
+      setDepositing(false)
+    }
+  }
+
+  const handleExportWallet = async () => {
+    if (!embeddedWallet) {
+      toast.error("No embedded wallet found")
+      return
+    }
+
+    setExporting(true)
+    try {
+      // For Privy, export wallet is typically initiated through the dashboard
+      // or by calling a specific method. For embedded wallets, we can initiate
+      // a recovery flow or prompt the user to export via the Privy UI
+      // This implementation assumes the wallet has a method to trigger the export flow
+      
+      // Check if wallet has exportWallet capability
+      if (typeof embeddedWallet === "object" && "exportWallet" in embeddedWallet) {
+        await (embeddedWallet as any).exportWallet()
+        toast.success("Wallet exported successfully")
+      } else {
+        // Fallback: show user the wallet address and guide them to export
+        toast.info("Please use Privy's dashboard to export your wallet")
+      }
     } catch (error) {
       console.error("Failed to export wallet:", error)
+      toast.error("Failed to export wallet")
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -106,27 +184,46 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                   <label className="text-sm font-medium text-muted-foreground">Balance</label>
                   <div className="p-4 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl border border-primary/20">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-foreground">{balance.toLocaleString()}</span>
-                      <span className="text-lg font-medium text-muted-foreground">USDC</span>
+                      {loadingBalance ? (
+                        <>
+                          <div className="h-8 w-24 bg-muted rounded animate-pulse" />
+                          <span className="text-lg font-medium text-muted-foreground">USDC</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-3xl font-bold text-foreground">
+                            {usdcBalance.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                          <span className="text-lg font-medium text-muted-foreground">USDC</span>
+                        </>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">Available for predictions</p>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-3">
+                {/* <div className="space-y-3">
                   {/* Deposit Button */}
-                  <button className="w-full px-4 py-3 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/50 transition-smooth flex items-center justify-center gap-2">
+                  {/* <button
+                    onClick={handleDepositUsdc}
+                    disabled={!walletAddress || !authenticated || depositing}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/50 transition-smooth flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Deposit USDC
-                  </button>
+                    {depositing ? "Processing..." : "Deposit USDC"}
+                  </button> */}
 
                   {/* Export Wallet Button */}
-                  <button
+                  {/* <button
                     onClick={handleExportWallet}
-                    className="w-full px-4 py-3 text-foreground font-semibold rounded-xl border border-border hover:border-primary/50 transition-smooth flex items-center justify-center gap-2"
+                    disabled={!hasEmbeddedWallet || !ready || exporting}
+                    className="w-full px-4 py-3 text-foreground font-semibold rounded-xl border border-border hover:border-primary/50 transition-smooth flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -136,8 +233,8 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                       />
                     </svg>
-                    Export Wallet
-                  </button>
+                    {exporting ? "Exporting..." : "Export Wallet"}
+                  </button> */}
 
                   {/* Disconnect Button */}
                   <button
@@ -157,7 +254,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                     </svg>
                     Disconnect Wallet
                   </button>
-                </div>
+                {/* </div> */}
 
                 {/* Network Info */}
                 {/* <div className="pt-4 border-t border-border">
