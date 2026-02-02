@@ -11,4 +11,5 @@ jobs:
     steps:
       - name: Ping Render backend
         run: |
-          curl -s https://api2.swiv.xyz/health
+          curl -s --max-time 10 \
+          curl -s https://api2.swiv.xyz/health || echo "Ping failed"
