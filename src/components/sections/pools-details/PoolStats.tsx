@@ -73,9 +73,9 @@ export function PoolStats({ pool }: PoolStatsProps) {
       transition={{ delay: 0.2 }}
       className="space-y-4"
     >
-      <h2 className="text-base md:text-lg font-bold text-foreground mb-4">Pool Details</h2>
+      {/* <h2 className="text-base md:text-lg font-bold text-foreground mb-4">Pool Details</h2> */}
 
-      {stats.map((stat, index) => (
+      {/* {stats.map((stat, index) => (
         <motion.div
           key={index}
           initial={{ opacity: 0, x: -10 }}
@@ -88,7 +88,7 @@ export function PoolStats({ pool }: PoolStatsProps) {
             {stat.value} {stat.unit && <span className="text-xs md:text-sm text-muted-foreground ml-1">{stat.unit}</span>}
           </div>
         </motion.div>
-      ))}
+      ))} */}
 
       {/* Countdown */}
       <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">

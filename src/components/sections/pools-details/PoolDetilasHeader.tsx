@@ -23,7 +23,7 @@ export function PoolDetailsHeader({ pool }: PoolDetailsHeaderProps) {
 
     const style = styles[status]
     return (
-      <div className={`px-2 py-1 rounded-lg border text-[10px] md:text-xs font-medium ${style.bg} ${style.border} ${style.text}`}>
+      <div className={`px-2 py-1 rounded-lg border text-[10px] md:text-xs ${style.bg} ${style.border} ${style.text}`}>
         {style.label}
       </div>
     )
@@ -48,26 +48,26 @@ export function PoolDetailsHeader({ pool }: PoolDetailsHeaderProps) {
       <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-6">
         <div className="flex-1">
           <div className="flex items-start gap-3 mb-3">
-            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight">{pool.name}</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground leading-tight">{pool.name}</h1>
             {getStatusBadge(pool.status)}
           </div>
           <p className="text-muted-foreground mb-4 text-xs sm:text-sm">Pool ID: <span className="font-mono text-primary font-semibold">{pool.pool_id}</span></p>
 
           {/* Key Stats Row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-            <div className="p-3 rounded-lg bg-muted/50">
+            <div className="p-3 rounded-lg bg-muted/40">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Participants</p>
               <p className="text-base font-bold text-foreground">{pool.total_participants}</p>
             </div>
-            <div className="p-3 rounded-lg bg-muted/50">
+            <div className="p-3 rounded-lg bg-muted/40">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Volume</p>
               <p className="text-base font-bold font-mono text-foreground">${(pool.vault_balance / 1_000_000).toFixed(2)}</p>
             </div>
-            <div className="p-3 rounded-lg bg-muted/50">
+            <div className="p-3 rounded-lg bg-muted/40">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Time Left</p>
               <p className="text-base font-bold text-foreground">{hoursRemaining}h {minutesRemaining}m</p>
             </div>
-            <div className="p-3 rounded-lg bg-muted/50">
+            <div className="p-3 rounded-lg bg-muted/40">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Time Bonus (bps)</p>
               <p className="text-base font-bold font-mono text-foreground">{pool.conviction_bonus_bps}</p>
             </div>
