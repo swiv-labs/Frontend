@@ -68,7 +68,8 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
     setIsClaiming(true)
 
     try {
-      const usdcMint = new PublicKey(process.env.NEXT_PUBLIC_USDC_TOKEN_MINT!)
+      const usdcMint = new PublicKey(pool.token_mint)
+      console.log("usdcMint: ", usdcMint)
       const userTokenAccount = await getAssociatedTokenAddress(usdcMint, new PublicKey(solanaWallet.address))
 
       await claimRewardFlow({
