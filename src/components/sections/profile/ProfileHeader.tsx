@@ -8,6 +8,7 @@ import { updateProfile } from "@/lib/store/slices/walletSlice"
 import { authApi } from "@/lib/api/auth"
 import { useToast } from "@/lib/hooks/useToast"
 import Image from "next/image"
+import { formatUsdcBalanceWithDollar } from "@/lib/helpers/formatUsdc"
 
 export default function ProfileHeader() {
   const { user } = usePrivy()
@@ -187,7 +188,7 @@ export default function ProfileHeader() {
             </div>
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Rewards</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">${totalRewards.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatUsdcBalanceWithDollar(totalRewards)}</p>
             </div>
           </div>
         )}

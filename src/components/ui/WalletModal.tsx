@@ -6,6 +6,7 @@ import { useSolanaWallets } from "@privy-io/react-auth"
 import { useAppSelector } from "@/lib/store/hooks"
 import { useEffect, useState } from "react"
 import { getUsdcBalanceFormatted } from "@/lib/solana/token"
+import { formatUsdcBalance } from "@/lib/helpers/formatUsdc"
 import { useToast } from "@/lib/hooks/useToast"
 
 interface WalletModalProps {
@@ -192,10 +193,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                       ) : (
                         <>
                           <span className="text-3xl font-bold text-foreground">
-                            {usdcBalance.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                            {formatUsdcBalance(usdcBalance)}
                           </span>
                           <span className="text-lg font-medium text-muted-foreground">USDC</span>
                         </>

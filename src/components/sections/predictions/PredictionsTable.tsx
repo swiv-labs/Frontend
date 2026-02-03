@@ -13,6 +13,7 @@ import { getAssociatedTokenAddress } from "@solana/spl-token"
 import { claimRewardFlow } from "@/lib/solana/claim-reward"
 import { useToast } from "@/lib/hooks/useToast"
 import { Prediction } from "@/lib/types/models"
+import { formatUsdcBalanceWithDollar, formatUsdcBalanceWithSign } from "@/lib/helpers/formatUsdc"
 
 interface PredictionsTableProps {
   predictions: Prediction[]
@@ -257,7 +258,7 @@ export function PredictionsTable({ predictions }: PredictionsTableProps) {
                 </td>
                 <td className="py-3 px-4">
                   <span className="text-sm font-semibold text-green-400">
-                    {prediction.reward ? `+$${prediction.reward.toLocaleString()}` : "-"}
+                    {prediction.reward ? formatUsdcBalanceWithSign(prediction.reward) : "-"}
                   </span>
                 </td>
                 <td className="py-3 px-4">{getStatusBadge(prediction.status)}</td>

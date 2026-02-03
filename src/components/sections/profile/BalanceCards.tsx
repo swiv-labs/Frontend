@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { useAppSelector } from "@/lib/store/hooks"
 import { Briefcase, ChartBarIncreasing, DollarSign, Gift, Lock } from "lucide-react"
+import { formatUsdcBalanceWithDollar, formatUsdcBalanceWithSign } from "@/lib/helpers/formatUsdc"
 
 export default function BalanceCards() {
   const balance = useAppSelector((state) => state.wallet.balance)
@@ -80,7 +81,10 @@ export default function BalanceCards() {
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{card.title}</p>
           <p className={`text-2xl font-bold ${card.textColor}`}>
-            {card.showSign && card.value >= 0 ? "+" : ""}${Math.abs(card.value).toLocaleString()}
+            {card.showSign 
+              ? formatUsdcBalanceWithSign(card.value)
+              : formatUsdcBalanceWithDollar(card.value)
+            }
           </p>
         </motion.div>
       ))}

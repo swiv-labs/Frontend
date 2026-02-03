@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { formatUsdcBalanceWithDollar } from "@/lib/helpers/formatUsdc"
 
 interface ParticipantsTableProps {
   poolId: string
@@ -58,7 +59,7 @@ export function ParticipantsTable({ poolId }: ParticipantsTableProps) {
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <span className="text-sm text-foreground">${participant.stake.toLocaleString()}</span>
+                  <span className="text-sm text-foreground">{formatUsdcBalanceWithDollar(participant.stake)}</span>
                 </td>
                 <td className="py-3 px-4">
                   <span className="text-sm text-muted-foreground">{participant.timestamp}</span>

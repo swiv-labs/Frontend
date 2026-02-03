@@ -3,6 +3,7 @@
 import { Prediction } from "@/lib/types/models"
 import { motion } from "framer-motion"
 import { Lock, PiggyBank, Trophy, TrendingUp } from "lucide-react"
+import { formatUsdcBalanceWithDollar } from "@/lib/helpers/formatUsdc"
 
 interface PredictionsStatsProps {
   predictions: Prediction[]
@@ -25,7 +26,7 @@ export function PredictionsStats({ predictions, stats }: PredictionsStatsProps) 
     },
     {
       label: "Total Volume",
-      value: `$${stats.totalStaked.toLocaleString()}`,
+      value: formatUsdcBalanceWithDollar(stats.totalStaked),
       icon: <PiggyBank size={30} />,
       color: "text-green-400",
     },

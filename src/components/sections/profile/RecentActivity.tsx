@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { useAppSelector } from "@/lib/store/hooks"
+import { formatUsdcBalanceWithDollar, formatUsdcBalanceWithSign } from "@/lib/helpers/formatUsdc"
 
 export default function RecentActivity() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
@@ -63,8 +64,8 @@ export default function RecentActivity() {
               <div className="text-right">
                 <p className={`font-semibold ${getActivityColor(prediction.status)}`}>
                   {prediction.status === "claimed" && prediction.reward
-                    ? `+$${(prediction.reward - prediction.deposit).toLocaleString()}`
-                    : `$${prediction.deposit.toLocaleString()}`}
+                    ? formatUsdcBalanceWithSign(prediction.reward - prediction.deposit)
+                    : formatUsdcBalanceWithDollar(prediction.deposit)}
                 </p>
               </div>
             </div>

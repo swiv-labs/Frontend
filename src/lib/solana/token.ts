@@ -6,16 +6,20 @@ const connection = new Connection(
   "confirmed"
 )
 
+// USDC token mint for Devnet: 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+// Decimals: 4
+const USDC_DECIMALS = 4
+
 /**
  * Fetch the USDC token balance for a given wallet address
  * @param walletAddress - The wallet public key or address string
- * @returns The USDC balance in the smallest unit (lamports)
+ * @returns The USDC balance in the smallest unit
  */
 export async function getUsdcBalance(walletAddress: string | PublicKey): Promise<number> {
   try {
     const wallet = typeof walletAddress === "string" ? new PublicKey(walletAddress) : walletAddress
     
-    // USDC token mint address on mainnet and devnet
+    // USDC token mint address on devnet: 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
     const usdcMint = new PublicKey(process.env.NEXT_PUBLIC_USDC_TOKEN_MINT!)
     
     // Get the associated token account for USDC
@@ -36,16 +40,18 @@ export async function getUsdcBalance(walletAddress: string | PublicKey): Promise
 /**
  * Fetch the USDC token balance and convert to human-readable format
  * @param walletAddress - The wallet public key or address string
- * @param decimals - Number of decimals for USDC (default 6)
+ * @param decimals - Number of decimals for USDC (default 4 for devnet)
  * @returns The USDC balance in human-readable format
  */
 export async function getUsdcBalanceFormatted(
   walletAddress: string | PublicKey,
-  decimals: number = 6
+  decimals: number = USDC_DECIMALS
 ): Promise<number> {
   const balanceInSmallestUnit = await getUsdcBalance(walletAddress)
   return balanceInSmallestUnit / Math.pow(10, decimals)
 }
+
+export const USDC_TOKEN_DECIMALS = USDC_DECIMALS
 
 /**
  * Fetch token account balance for any SPL token
