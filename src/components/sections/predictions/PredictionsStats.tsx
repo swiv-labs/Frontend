@@ -26,7 +26,7 @@ export function PredictionsStats({ predictions, stats }: PredictionsStatsProps) 
     },
     {
       label: "Total Volume",
-      value: formatUsdcBalanceWithDollar(stats.totalStaked),
+      value: `$${stats.totalStaked.toLocaleString()}`,
       icon: <PiggyBank size={30} />,
       color: "text-green-400",
     },

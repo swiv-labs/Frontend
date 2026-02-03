@@ -5,6 +5,7 @@ import { useAppSelector } from "@/lib/store/hooks"
 import Link from "next/link"
 import { ChartArea } from "lucide-react"
 import Image from "next/image"
+import { formatUsdcBalanceWithDollar } from "@/lib/helpers/formatUsdc"
 
 export default function ActivePositions() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
@@ -50,7 +51,7 @@ export default function ActivePositions() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900 dark:text-white">${prediction.deposit.toLocaleString()}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{formatUsdcBalanceWithDollar(prediction.deposit)}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Staked</p>
                 </div>
               </div>

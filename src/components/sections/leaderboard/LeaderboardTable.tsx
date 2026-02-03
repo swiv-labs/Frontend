@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Confetti } from "./Confetti"
 import { useAppSelector } from "@/lib/store/hooks"
 import { LeaderboardEntry } from "@/lib/types/models"
+import { formatUsdcBalanceWithDollar } from "@/lib/helpers/formatUsdc"
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[]
@@ -95,7 +96,7 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Rewards</span>
-                    <span className="font-semibold text-green-400">${entry.total_earnings.toLocaleString()}</span>
+                    <span className="font-semibold text-green-400">{formatUsdcBalanceWithDollar(entry.total_earnings)}</span>
                   </div>
                 </div>
               </div>
@@ -168,7 +169,7 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                     <span className="text-sm text-foreground">{entry.active_predictions}</span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm font-semibold text-green-400">${entry.total_earnings.toLocaleString()}</span>
+                    <span className="text-sm font-semibold text-green-400">{formatUsdcBalanceWithDollar(entry.total_earnings)}</span>
                   </td>
                 </motion.tr>
               ))}

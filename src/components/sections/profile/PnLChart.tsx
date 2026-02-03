@@ -72,7 +72,7 @@ export default function PnLChart() {
                 borderRadius: "8px",
                 color: "#fff",
               }}
-              formatter={(value: number) => [`$${value.toLocaleString()}`, "PnL"]}
+              formatter={(value: number) => [formatUsdcBalanceWithSign(value), "PnL"]}
             />
             <Line
               type="monotone"

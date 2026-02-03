@@ -5,6 +5,7 @@ import { Pool } from "@/lib/store/slices/poolsSlice"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { formatUsdcBalanceWithDollar } from "@/lib/helpers/formatUsdc"
 
 export function ActivePoolsSection() {
   const [activePools, setActivePools] = useState<Pool[]>([])
@@ -126,7 +127,7 @@ export function ActivePoolsSection() {
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center justify-between p-3 rounded-xl border border-border">
                     <span className="text-sm text-muted-foreground font-medium">Pool Size</span>
-                    <span className="text-sm font-bold text-foreground">${pool.vault_balance.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-foreground">{formatUsdcBalanceWithDollar(pool.vault_balance)}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-xl border border-border">
                     <span className="text-sm text-muted-foreground font-medium">Participants</span>

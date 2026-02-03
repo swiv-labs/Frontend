@@ -8,7 +8,7 @@ const connection = new Connection(
 
 // USDC token mint for Devnet: 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
 // Decimals: 4
-const USDC_DECIMALS = 4
+const USDC_DECIMALS = 6
 
 /**
  * Fetch the USDC token balance for a given wallet address
