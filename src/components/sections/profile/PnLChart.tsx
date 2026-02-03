@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { useAppSelector } from "@/lib/store/hooks"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { formatUsdcBalanceWithSign } from "@/lib/helpers/formatUsdc"
 
 export default function PnLChart() {
   const predictions = useAppSelector((state) => state.predictions.predictions)
@@ -48,7 +49,7 @@ export default function PnLChart() {
               isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
             }`}
           >
-            {isPositive ? "+" : ""}${totalPnL.toLocaleString()}
+            {formatUsdcBalanceWithSign(totalPnL)}
           </p>
         </div>
         <div className="flex gap-2">
