@@ -51,8 +51,19 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   const MAX_PREDICTION = pool.max_prediction || 1000
   const STEP = (MAX_PREDICTION - MIN_PREDICTION) / 100000
 
+  const clampPrediction = (value: number) => {
+    if (Number.isNaN(value)) return MIN_PREDICTION
+    return Math.max(MIN_PREDICTION, Math.min(MAX_PREDICTION, value))
+  }
+
   const handlePredictionChange = (value: number) => {
-    setPrediction(value)
+    setPrediction(clampPrediction(value))
+  }
+
+  const handlePredictionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value)
+    if (Number.isNaN(v)) return
+    setPrediction(clampPrediction(v))
   }
 
   const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,7 +244,18 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-xs md:text-sm font-medium text-foreground">Predicted Value</label>
-              <div className="text-base md:text-lg font-bold text-primary font-mono">{prediction.toFixed(2)}</div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  // min={MIN_PREDICTION}
+                  // max={MAX_PREDICTION}
+                  // step={STEP}
+                  value={prediction}
+                  onChange={handlePredictionInputChange}
+                  disabled={isSubmitting || !authenticated}
+                  className="w-28 px-2 py-1 rounded-md bg-muted/10 border border-border text-right font-mono text-base md:text-lg font-bold text-primary focus:outline-none"
+                />
+              </div>
             </div>
 
             <input
