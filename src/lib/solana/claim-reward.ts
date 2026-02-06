@@ -26,10 +26,6 @@ export interface ClaimRewardParams {
   wallet: any
 }
 
-/**
- * Build and sign the claim_reward instruction on the user's wallet
- * Returns signed transaction ready to be broadcast
- */
 export async function buildAndSignClaimRewardTx(
   params: ClaimRewardParams
 ): Promise<{ signedTx: Transaction; txSignature: string }> {
@@ -42,7 +38,6 @@ export async function buildAndSignClaimRewardTx(
 
   console.log("[Claim] 🏗️  Building claim_reward transaction...", params)
 
-  // Derive PDAs
   const [protocolPda] = PublicKey.findProgramAddressSync(
     [SEED_PROTOCOL],
     program.programId,
@@ -72,7 +67,6 @@ export async function buildAndSignClaimRewardTx(
       .instruction(),
   );
 
-  // Set transaction properties
   const { blockhash } = await connection.getLatestBlockhash()
   tx.recentBlockhash = blockhash
   tx.feePayer = params.userWallet
@@ -100,12 +94,6 @@ export async function buildAndSignClaimRewardTx(
   }
 }
 
-/**
- * Complete claim reward flow:
- * 1. Build and sign claim_reward instruction
- * 2. Broadcast and confirm on-chain
- * 3. Notify backend to persist claim record
- */
 export async function claimRewardFlow(
   params: ClaimRewardParams & { predictionId: string }
 ): Promise<{
@@ -115,29 +103,23 @@ export async function claimRewardFlow(
   try {
     console.log("[Claim] Starting complete claim reward flow...")
 
-    // Step 1: Build, sign, and broadcast claim_reward transaction
     const { txSignature } = await buildAndSignClaimRewardTx(params)
 
-    // Step 2: Extract reward from on-chain confirmation
     const confirmedTx = await connection.getParsedTransaction(txSignature, 'confirmed')
     if (!confirmedTx || !confirmedTx.meta) {
       throw new Error('Failed to parse confirmed claim transaction')
     }
 
-    // Simple approach: inspect token balance changes
-    // In a production system, you'd parse the instruction logs or read account state
     let rewardAmount = 0
     const postBalances = confirmedTx.meta.postTokenBalances || []
     const preBalances = confirmedTx.meta.preTokenBalances || []
 
-    // Find token balance increase for user's token account
     for (const post of postBalances) {
       const pre = preBalances.find((p: any) => p.accountIndex === post.accountIndex)
       const preAmount = pre ? BigInt(pre.uiTokenAmount.amount) : BigInt(0)
       const postAmount = BigInt(post.uiTokenAmount.amount)
 
       if (postAmount > preAmount) {
-        // Token amount increased; this is the reward
         rewardAmount = Number(postAmount - preAmount)
         break
       }
@@ -145,7 +127,6 @@ export async function claimRewardFlow(
 
     console.log(`[Claim] 💰 Reward amount detected: ${rewardAmount}`)
 
-    // Step 3: Notify backend to persist claim record
     console.log("[Claim] 💾 Persisting claim record in backend...")
     const response = await claimRewardDB({
       predictionId: params.predictionId,
@@ -154,7 +135,7 @@ export async function claimRewardFlow(
       rewardAmount,
     })
 
-    console.log("[Claim] ✨ Claim reward flow complete")
+    console.log("[Claim] ✨ Claim reward flow complete: ", response)
 
     return {
       txSignature,
