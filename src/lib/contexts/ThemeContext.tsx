@@ -24,7 +24,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(savedTheme)
       document.documentElement.classList.toggle("dark", savedTheme === "dark")
     } else {
-      // Set initial dark class if no saved theme
       document.documentElement.classList.add("dark")
     }
   }, [])
