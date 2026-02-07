@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth"
 import type { Pool, Prediction } from "@/lib/types/models"
@@ -35,6 +35,8 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   const toast = useToast()
 
   const [prediction, setPrediction] = useState<number>(0)
+  const [inputPrediction, setInputPrediction] = useState<string>("0")
+  const [predictionError, setPredictionError] = useState<string>("")
   const [deposit, setDeposit] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [placedPrediction, setPlacedPrediction] = useState<Prediction | null>(null)
@@ -49,7 +51,16 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
   // These are set when pool is created in the backend
   const MIN_PREDICTION = pool.min_prediction || 0
   const MAX_PREDICTION = pool.max_prediction || 1000
-  const STEP = (MAX_PREDICTION - MIN_PREDICTION) / 100000
+  // Determine step / rounding behavior from MIN_PREDICTION length
+  const computeStepFromMin = () => {
+    const absInt = Math.floor(Math.abs(MIN_PREDICTION))
+    const len = absInt === 0 ? 1 : String(absInt).length
+    // If min prediction integer length is less than 3 -> use 0.1 steps, otherwise integers
+    return len < 3 ? 0.1 : 1
+  }
+
+  const INPUT_STEP = computeStepFromMin()
+  const DISPLAY_DECIMALS = INPUT_STEP < 1 ? 1 : 0
 
   const clampPrediction = (value: number) => {
     if (Number.isNaN(value)) return MIN_PREDICTION
@@ -60,15 +71,50 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
     setPrediction(clampPrediction(value))
   }
 
+  const formatPrediction = (v: number) => DISPLAY_DECIMALS > 0 ? v.toFixed(DISPLAY_DECIMALS) : String(Math.round(v))
+
   const handlePredictionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = Number(e.target.value)
-    if (Number.isNaN(v)) return
+    const val = e.target.value
+    setInputPrediction(val)
+    if (val === "" || val === "-" || val === ".") {
+      setPredictionError("")
+      return
+    }
+    const v = Number(val)
+    if (Number.isNaN(v)) {
+      setPredictionError("Invalid number")
+      return
+    }
+    if (v < MIN_PREDICTION || v > MAX_PREDICTION) {
+      setPredictionError(`Prediction must be between ${MIN_PREDICTION} and ${MAX_PREDICTION}`)
+      return
+    }
+    setPredictionError("")
     setPrediction(clampPrediction(v))
+  }
+
+  const incrementPrediction = (delta: number) => {
+    setPrediction(prev => {
+      const next = clampPrediction(Number((prev + delta).toFixed(DISPLAY_DECIMALS)))
+      setInputPrediction(formatPrediction(next as number))
+      setPredictionError("")
+      return next
+    })
+  }
+
+  const incrementDeposit = (delta: number) => {
+    const cur = Number.parseFloat(deposit || "0")
+    const next = Math.max(0, cur + delta)
+    setDeposit(String(next))
   }
 
   const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDeposit(e.target.value)
   }
+
+  useEffect(() => {
+    setInputPrediction(formatPrediction(prediction))
+  }, [prediction, DISPLAY_DECIMALS])
 
   const handleClaimReward = async () => {
     if (!ready || !authenticated || !solanaWallet || !placedPrediction) {
@@ -120,7 +166,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
 
     // Validate prediction is within range
     if (prediction < MIN_PREDICTION || prediction > MAX_PREDICTION) {
-      toast.error(`Prediction must be between ${MIN_PREDICTION.toFixed(2)} and ${MAX_PREDICTION.toFixed(2)}`)
+      toast.error(`Prediction must be between ${MIN_PREDICTION.toFixed(DISPLAY_DECIMALS)} and ${MAX_PREDICTION.toFixed(DISPLAY_DECIMALS)}`)
       return
     }
 
@@ -220,7 +266,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
     >
       <div>
         <h3 className="text-base md:text-lg font-bold text-foreground">Place Prediction</h3>
-        <p className="text-xs md:text-sm text-muted-foreground mt-1">Pool {pool.pool_id}</p>
+        {/* <p className="text-xs md:text-sm text-muted-foreground mt-1">Pool {pool.pool_id}</p> */}
       </div>
 
       {placedPrediction ? (
@@ -243,18 +289,66 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
           {/* Prediction Slider */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-xs md:text-sm font-medium text-foreground">Predicted Value</label>
+              <label className="text-xs md:text-sm font-medium text-foreground">Prediction</label>
               <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  // min={MIN_PREDICTION}
-                  // max={MAX_PREDICTION}
-                  // step={STEP}
-                  value={prediction}
-                  onChange={handlePredictionInputChange}
-                  disabled={isSubmitting || !authenticated}
-                  className="w-28 px-2 py-1 rounded-md bg-muted/10 border border-border text-right font-mono text-base md:text-lg font-bold text-primary focus:outline-none"
-                />
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center border border-border rounded-md bg-muted/10 px-2">
+                      <input
+                        type="number"
+                        min={MIN_PREDICTION}
+                        max={MAX_PREDICTION}
+                        step={INPUT_STEP}
+                        value={inputPrediction}
+                        onChange={handlePredictionInputChange}
+                        onBlur={() => {
+                          if (inputPrediction === "" || inputPrediction === "-" || inputPrediction === ".") {
+                            setInputPrediction(formatPrediction(prediction))
+                            setPredictionError("")
+                            return
+                          }
+                          const v = Number(inputPrediction)
+                          if (Number.isNaN(v)) {
+                            setInputPrediction(formatPrediction(prediction))
+                            setPredictionError("")
+                            return
+                          }
+                          const clamped = clampPrediction(v)
+                          setPrediction(clamped)
+                          setInputPrediction(formatPrediction(clamped))
+                          setPredictionError("")
+                        }}
+                        disabled={isSubmitting || !authenticated}
+                        className="no-spinner flex-1 px-2 py-1 bg-transparent border-0 text-right font-mono text-base md:text-lg font-bold text-primary focus:outline-none"
+                      />
+
+                      <div className="flex flex-col ml-2">
+                        <button
+                          type="button"
+                          aria-label="increase"
+                          onClick={() => incrementPrediction(INPUT_STEP)}
+                          disabled={isSubmitting || !authenticated}
+                          className="bg-transparent rounded text-primary hover:bg-muted/20"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-chevron-up h-3.5 w-3.5" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="decrease"
+                          onClick={() => incrementPrediction(-INPUT_STEP)}
+                          disabled={isSubmitting || !authenticated}
+                          className=" bg-transparent rounded text-primary hover:bg-muted/20"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-chevron-down h-3.5 w-3.5" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {pool.name && pool.name.toLowerCase().includes("price") && (
+                    <span className="text-xs text-muted-foreground">USD</span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -262,7 +356,7 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
               type="range"
               min={MIN_PREDICTION}
               max={MAX_PREDICTION}
-              step={STEP}
+              step={INPUT_STEP}
               value={prediction}
               onChange={(e) => handlePredictionChange(Number(e.target.value))}
               disabled={isSubmitting || !authenticated}
@@ -273,24 +367,51 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
               <span>{MIN_PREDICTION}</span>
               <span>{MAX_PREDICTION}</span>
             </div>
+            {predictionError && (
+              <p className="text-xs text-red-500 mt-2">{predictionError}</p>
+            )}
           </div>
 
-          {/* Deposit Amount */}
+          {/* Stake Amount */}
           <div>
             <label htmlFor="deposit" className="block text-xs md:text-sm font-medium text-foreground mb-2">
-              Deposit Amount (USDC)
+              Stake Amount (USDC)
             </label>
-            <input
-              id="deposit"
-              type="number"
-              step="1"
-              min="1"
-              value={deposit}
-              onChange={handleDepositChange}
-              placeholder="100"
-              disabled={isSubmitting || !authenticated}
-              className="w-full px-4 py-3 rounded-xl bg-muted/10 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-smooth disabled:opacity-50"
-            />
+            <div className="w-full flex items-center gap-2">
+              <div className="w-full flex items-center border border-border rounded-md bg-muted/10 px-2">
+                <input
+                  id="deposit"
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={deposit}
+                  onChange={handleDepositChange}
+                  placeholder="100"
+                  disabled={isSubmitting || !authenticated}
+                  className="no-spinner flex-1 px-2 py-3 bg-transparent border-0 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 transition-smooth disabled:opacity-50"
+                />
+                <div className="flex flex-col ml-2">
+                  <button
+                    type="button"
+                    aria-label="increase deposit"
+                    onClick={() => incrementDeposit(1)}
+                    disabled={isSubmitting || !authenticated}
+                    className="p-1 bg-transparent rounded text-foreground hover:bg-muted/20"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-chevron-up h-3.5 w-3.5" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="decrease deposit"
+                    onClick={() => incrementDeposit(-1)}
+                    disabled={isSubmitting || !authenticated}
+                    className="p-1 bg-transparent rounded text-foreground hover:bg-muted/20"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-chevron-down h-3.5 w-3.5" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Connection Status */}
@@ -341,6 +462,16 @@ export function InlineBettingPanel({ pool }: InlineBettingPanelProps) {
           </span>
         </div>
       </div>
+      <style jsx>{`
+        input.no-spinner::-webkit-outer-spin-button,
+        input.no-spinner::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input.no-spinner {
+          -moz-appearance: textfield;
+        }
+      `}</style>
     </motion.div>
   )
 }
